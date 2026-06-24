@@ -1,15 +1,19 @@
 import { useRef } from 'react'
-import type { Transaction } from '../types'
-import { TxList } from './TxList'
+import type { Category, Transaction } from '../types'
+import { TxList, type TxPatch } from './TxList'
 import { ScrollTopButton } from './ScrollTopButton'
 
 export function TxModal({
   txs,
+  cats,
   onDelete,
+  onUpdate,
   onClose,
 }: {
   txs: Transaction[]
+  cats: Category[]
   onDelete: (id: string) => void
+  onUpdate: (id: string, patch: TxPatch) => void
   onClose: () => void
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -26,7 +30,7 @@ export function TxModal({
           </button>
         </div>
         <div className="tx-scroll" ref={scrollRef}>
-          <TxList txs={txs} onDelete={onDelete} />
+          <TxList txs={txs} cats={cats} onDelete={onDelete} onUpdate={onUpdate} />
         </div>
         <ScrollTopButton target={scrollRef} className="in-modal" />
       </div>

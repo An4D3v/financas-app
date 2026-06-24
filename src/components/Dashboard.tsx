@@ -245,6 +245,29 @@ export function Dashboard({ session }: { session: Session }) {
     await supabase.from('transactions').delete().eq('id', id)
   }
 
+  async function updateTx(
+    id: string,
+    patch: Partial<Pick<Transaction, 'description' | 'category_id' | 'amount' | 'occurred_on'>>,
+  ) {
+    // atualiza na tela na hora (otimista) e refaz a categoria embutida se ela mudou
+    setTxs((prev) =>
+      prev.map((t) => {
+        if (t.id !== id) return t
+        const next = { ...t, ...patch }
+        if ('category_id' in patch) {
+          const c = cats.find((cc) => cc.id === patch.category_id)
+          next.categories = c ? { name: c.name, color: c.color } : null
+        }
+        return next
+      }),
+    )
+    const { error } = await supabase.from('transactions').update(patch).eq('id', id)
+    if (error) {
+      alert(error.message)
+      load() // reverte recarregando do banco
+    }
+  }
+
   const periodTxs = useMemo(() => {
     if (period === 'tudo') return txs
     const today = todayStr()
@@ -475,7 +498,7 @@ export function Dashboard({ session }: { session: Session }) {
           </select>
         </div>
         {listTxs.length === 0 && <p className="muted small">nenhum lancamento nesse filtro.</p>}
-        <TxList txs={listTxs.slice(0, 10)} onDelete={delTx} />
+        <TxList txs={listTxs.slice(0, 10)} cats={cats} onDelete={delTx} onUpdate={updateTx} />
         {listTxs.length > 10 && (
           <button type="button" className="btn ver-mais" onClick={() => setShowAll(true)}>
             ver mais {listTxs.length - 10} lancamento{listTxs.length - 10 > 1 ? 's' : ''} →
@@ -518,7 +541,9 @@ export function Dashboard({ session }: { session: Session }) {
 
       {showAbout && <About onClose={() => setShowAbout(false)} />}
 
-      {showAll && <TxModal txs={listTxs} onDelete={delTx} onClose={() => setShowAll(false)} />}
+      {showAll && (
+        <TxModal txs={listTxs} cats={cats} onDelete={delTx} onUpdate={updateTx} onClose={() => setShowAll(false)} />
+      )}
 
       {!(reviewData || showSettings || showAccount || showAbout || showAll) && <ScrollTopButton />}
     </div>

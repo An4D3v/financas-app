@@ -116,6 +116,19 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 .tx-val { font-family: ui-monospace, Consolas, monospace; font-weight: 700; font-size: 14px; flex: none; }
 .x { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 0 4px; flex: none; }
 .x:hover { color: var(--red); }
+
+/* edicao inline: clicar no campo p/ editar */
+.editable { cursor: pointer; border-radius: 4px; }
+.editable:hover { text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+.tx-cat { color: var(--muted); }
+.tx-edit {
+  font-family: inherit; font-size: 13px; padding: 4px 7px; width: auto;
+  background: var(--bg); border: 1px solid var(--cyan); border-radius: 6px; color: var(--txt);
+}
+.tx-edit-date { width: 134px; flex: none; }
+.tx-edit-desc { width: 140px; }
+.tx-edit-cat { width: auto; max-width: 168px; }
+.tx-edit-val { width: 92px; text-align: right; flex: none; }
 @media (max-width: 680px) {
   .kpis { grid-template-columns: 1fr; }
   .grid2 { grid-template-columns: 1fr; }
