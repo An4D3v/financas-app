@@ -4,6 +4,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import { supabase } from '../lib/supabase'
 import { ScanReview, type ReviewRow } from './ScanReview'
 import { Settings } from './Settings'
+import { Account } from './Account'
+import { About } from './About'
 import { applyTheme, getStoredTheme, type ThemePref } from '../lib/theme'
 import type { Category, Transaction, Profile } from '../types'
 
@@ -52,6 +54,8 @@ export function Dashboard({ session }: { session: Session }) {
   const [showSettings, setShowSettings] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const [showAccount, setShowAccount] = useState(false)
+  const [showAbout, setShowAbout] = useState(false)
   const [theme, setTheme] = useState<ThemePref>(getStoredTheme())
 
   async function load() {
@@ -94,6 +98,36 @@ export function Dashboard({ session }: { session: Session }) {
     }
     setProfile((p) => ({ ...(p ?? { user_id: session.user.id }), ...payload } as Profile))
     setShowSettings(false)
+  }
+
+  function exportCSV() {
+    setMenuOpen(false)
+    if (!txs.length) {
+      alert('Nada pra exportar ainda — adiciona uns lancamentos primeiro. :)')
+      return
+    }
+    const header = ['data', 'tipo', 'descricao', 'categoria', 'valor']
+    const esc = (v: string) => '"' + v.replace(/"/g, '""') + '"'
+    const lines = txs.map((t) =>
+      [
+        t.occurred_on,
+        t.type,
+        t.description ?? '',
+        t.categories?.name ?? '',
+        Number(t.amount).toFixed(2).replace('.', ','),
+      ]
+        .map((c) => esc(String(c)))
+        .join(';'),
+    )
+    // ; como separador e BOM p/ o Excel-BR abrir com acento e colunas certas
+    const csv = '﻿' + [header.map(esc).join(';'), ...lines].join('\r\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `financas-${todayStr()}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   useEffect(() => {
@@ -294,6 +328,29 @@ export function Dashboard({ session }: { session: Session }) {
                 <span className="menu-ico">⚙️</span> configuracoes
               </button>
               <button
+                className="menu-item"
+                role="menuitem"
+                onClick={() => {
+                  setMenuOpen(false)
+                  setShowAccount(true)
+                }}
+              >
+                <span className="menu-ico">👤</span> minha conta
+              </button>
+              <button className="menu-item" role="menuitem" onClick={exportCSV}>
+                <span className="menu-ico">⬇️</span> exportar dados
+              </button>
+              <button
+                className="menu-item"
+                role="menuitem"
+                onClick={() => {
+                  setMenuOpen(false)
+                  setShowAbout(true)
+                }}
+              >
+                <span className="menu-ico">ℹ️</span> sobre
+              </button>
+              <button
                 className="menu-item danger"
                 role="menuitem"
                 onClick={() => {
@@ -458,6 +515,18 @@ export function Dashboard({ session }: { session: Session }) {
           onSave={saveProfile}
         />
       )}
+
+      {showAccount && (
+        <Account
+          email={session.user.email ?? ''}
+          handle={handle}
+          createdAt={session.user.created_at ?? ''}
+          txCount={txs.length}
+          onClose={() => setShowAccount(false)}
+        />
+      )}
+
+      {showAbout && <About onClose={() => setShowAbout(false)} />}
     </div>
   )
 }
