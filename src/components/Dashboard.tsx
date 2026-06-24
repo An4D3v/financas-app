@@ -67,15 +67,30 @@ export function Dashboard({ session }: { session: Session }) {
         body: { image: base64, mimeType: file.type, categories: cats.map((c) => c.name) },
       })
       if (error) throw error
-      const res = (data ?? {}) as { merchant?: string; total?: number; date?: string; category?: string; error?: string }
+      const res = (data ?? {}) as { merchant?: string; total?: number | string; date?: string; category?: string; error?: string }
       if (res.error) throw new Error(res.error)
-      if (res.merchant) setDesc(res.merchant)
-      if (typeof res.total === 'number' && res.total > 0) setAmount(String(res.total).replace('.', ','))
-      if (res.date && /^\d{4}-\d{2}-\d{2}$/.test(res.date)) setDate(res.date)
+      const total = Number(res.total)
+      const achei: string[] = []
+      if (res.merchant) {
+        setDesc(res.merchant)
+        achei.push(res.merchant)
+      }
+      if (total > 0) {
+        setAmount(String(total).replace('.', ','))
+        achei.push(brl(total))
+      }
+      if (res.date && /^\d{4}-\d{2}-\d{2}$/.test(res.date)) {
+        setDate(res.date)
+        achei.push(res.date)
+      }
       setType('saida')
       const match = cats.find((c) => c.name.toLowerCase() === (res.category ?? '').toLowerCase())
       if (match) setCatId(match.id)
-      setScanMsg('Li a nota! Confere os campos e clica Adicionar.')
+      setScanMsg(
+        achei.length
+          ? 'Li: ' + achei.join(' · ') + '. Confere e clica Adicionar.'
+          : 'Nao consegui ler os dados dessa foto. Tenta uma mais nitida e reta, ou preenche manual.',
+      )
     } catch (err) {
       setScanMsg('Erro ao escanear: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
