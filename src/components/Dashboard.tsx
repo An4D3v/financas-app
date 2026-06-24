@@ -9,6 +9,7 @@ import { About } from './About'
 import { TxList } from './TxList'
 import { TxModal } from './TxModal'
 import { ScrollTopButton } from './ScrollTopButton'
+import { RangeCalendar } from './RangeCalendar'
 import { applyTheme, getStoredTheme, type ThemePref } from '../lib/theme'
 import type { Category, Transaction, Profile } from '../types'
 
@@ -17,6 +18,14 @@ const todayStr = () => new Date().toISOString().slice(0, 10)
 function daysAgoStr(n: number) {
   const d = new Date()
   d.setDate(d.getDate() - n)
+  return d.toISOString().slice(0, 10)
+}
+
+const brDate = (d: string) => (d ? d.slice(8, 10) + '/' + d.slice(5, 7) : '')
+
+function addDays(dateStr: string, n: number) {
+  const d = new Date(dateStr + 'T00:00:00')
+  d.setDate(d.getDate() + n)
   return d.toISOString().slice(0, 10)
 }
 
@@ -56,8 +65,12 @@ export function Dashboard({ session }: { session: Session }) {
   const [scanMsg, setScanMsg] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const [reviewData, setReviewData] = useState<{ merchant: string; date: string; rows: ReviewRow[] } | null>(null)
-  const [period, setPeriod] = useState<'dia' | 'semana' | 'mes' | 'tudo'>('mes')
+  const [period, setPeriod] = useState<'dia' | 'semana' | 'mes' | 'tudo' | 'custom'>('mes')
   const [catFilter, setCatFilter] = useState('')
+  const [customFrom, setCustomFrom] = useState('')
+  const [customTo, setCustomTo] = useState('')
+  const [calOpen, setCalOpen] = useState(false)
+  const calRef = useRef<HTMLDivElement>(null)
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [showSettings, setShowSettings] = useState(false)
@@ -160,6 +173,23 @@ export function Dashboard({ session }: { session: Session }) {
       document.removeEventListener('keydown', onKey)
     }
   }, [menuOpen])
+
+  // fecha o calendario ao clicar fora ou apertar Esc
+  useEffect(() => {
+    if (!calOpen) return
+    function onDoc(e: MouseEvent) {
+      if (calRef.current && !calRef.current.contains(e.target as Node)) setCalOpen(false)
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setCalOpen(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDoc)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [calOpen])
 
   async function onPickPhoto(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -276,6 +306,10 @@ export function Dashboard({ session }: { session: Session }) {
 
   const periodTxs = useMemo(() => {
     if (period === 'tudo') return txs
+    if (period === 'custom') {
+      if (!customFrom || !customTo) return txs
+      return txs.filter((t) => t.occurred_on >= customFrom && t.occurred_on <= customTo)
+    }
     const today = todayStr()
     const weekAgo = daysAgoStr(6)
     const ym = today.slice(0, 7)
@@ -284,7 +318,7 @@ export function Dashboard({ session }: { session: Session }) {
       if (period === 'semana') return t.occurred_on >= weekAgo && t.occurred_on <= today
       return t.occurred_on.slice(0, 7) === ym
     })
-  }, [txs, period])
+  }, [txs, period, customFrom, customTo])
 
   const { renda, gastos } = useMemo(() => {
     let renda = 0
@@ -315,7 +349,16 @@ export function Dashboard({ session }: { session: Session }) {
     [periodTxs, catFilter],
   )
 
-  const periodLabel = period === 'dia' ? 'hoje' : period === 'semana' ? '7 dias' : period === 'mes' ? 'mês' : 'tudo'
+  const periodLabel =
+    period === 'dia'
+      ? 'hoje'
+      : period === 'semana'
+        ? '7 dias'
+        : period === 'mes'
+          ? 'mês'
+          : period === 'custom' && customFrom && customTo
+            ? `${brDate(customFrom)}–${brDate(customTo)}`
+            : 'tudo'
 
   const insights = useMemo(() => {
     const today = todayStr()
@@ -327,7 +370,10 @@ export function Dashboard({ session }: { session: Session }) {
     let days = 1
     if (period === 'semana') days = 7
     else if (period === 'mes') days = Number(today.slice(8, 10))
-    else if (period === 'tudo') {
+    else if (period === 'custom' && customFrom && customTo) {
+      const ms = new Date(customTo + 'T00:00:00').getTime() - new Date(customFrom + 'T00:00:00').getTime()
+      days = Math.max(1, Math.round(ms / 86400000) + 1)
+    } else if (period === 'tudo') {
       const ds = periodTxs.map((t) => t.occurred_on).sort()
       if (ds.length) {
         const ms = new Date(today + 'T00:00:00').getTime() - new Date(ds[0] + 'T00:00:00').getTime()
@@ -360,11 +406,16 @@ export function Dashboard({ session }: { session: Session }) {
       const y = daysAgoStr(1)
       prevGastos = sumSaidaWhere(txs, (on) => on === y)
       prevLabel = 'ontem'
+    } else if (period === 'custom' && customFrom && customTo) {
+      const prevEnd = addDays(customFrom, -1)
+      const prevStart = addDays(customFrom, -days)
+      prevGastos = sumSaidaWhere(txs, (on) => on >= prevStart && on <= prevEnd)
+      prevLabel = 'período anterior'
     }
     const pct = prevGastos != null && prevGastos > 0 ? ((gastos - prevGastos) / prevGastos) * 100 : null
 
     return { savingRate, top, topPct, dailyAvg, biggest, pct, prevLabel }
-  }, [txs, periodTxs, period, renda, gastos, saldo, pieData])
+  }, [txs, periodTxs, period, renda, gastos, saldo, pieData, customFrom, customTo])
 
   if (loading) return <div className="center muted">carregando seus dados...</div>
 
@@ -459,6 +510,29 @@ export function Dashboard({ session }: { session: Session }) {
               {p === 'dia' ? 'Dia' : p === 'semana' ? 'Semana' : p === 'mes' ? 'Mês' : 'Tudo'}
             </button>
           ))}
+          <div className="cal-wrap" ref={calRef}>
+            <button
+              type="button"
+              className={'chip' + (period === 'custom' ? ' active' : '')}
+              onClick={() => setCalOpen((o) => !o)}
+            >
+              📅 {period === 'custom' && customFrom && customTo ? `${brDate(customFrom)}–${brDate(customTo)}` : 'período'}
+            </button>
+            {calOpen && (
+              <RangeCalendar
+                from={customFrom}
+                to={customTo}
+                max={todayStr()}
+                onApply={(f, t) => {
+                  setCustomFrom(f)
+                  setCustomTo(t)
+                  setPeriod('custom')
+                  setCalOpen(false)
+                }}
+                onClose={() => setCalOpen(false)}
+              />
+            )}
+          </div>
         </div>
       </div>
 

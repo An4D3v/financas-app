@@ -26,7 +26,8 @@
 :root[data-theme="light"] .btn.primary,
 :root[data-theme="light"] .btn.scan,
 :root[data-theme="light"] .chip.active,
-:root[data-theme="light"] .scroll-top { color: #fff; }
+:root[data-theme="light"] .scroll-top,
+:root[data-theme="light"] .cal-cell.sel { color: #fff; }
 html { transition: background 0.15s ease; }
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; }
@@ -137,6 +138,36 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 }
 .tx-type.is-in { color: var(--green); border-color: var(--green); }
 .tx-type.is-out { color: var(--pink); border-color: var(--pink); }
+
+/* calendario de periodo personalizado */
+.cal-wrap { position: relative; }
+.cal {
+  position: absolute; left: 0; top: calc(100% + 6px); z-index: 30;
+  width: 268px; max-width: 92vw; padding: 11px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+.cal-title { font-family: ui-monospace, Consolas, monospace; font-size: 13px; color: var(--cyan); text-transform: capitalize; }
+.cal-nav { background: var(--bg); border: 1px solid var(--line); color: var(--txt); border-radius: 7px; width: 28px; height: 28px; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; }
+.cal-nav:hover { border-color: var(--cyan); }
+.cal-nav.off { opacity: 0.35; cursor: default; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.cal-wd { margin-bottom: 5px; }
+.cal-wdc { text-align: center; font-size: 11px; color: var(--muted); font-family: ui-monospace, Consolas, monospace; }
+.cal-cell {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  background: none; border: none; border-radius: 7px; color: var(--txt); cursor: pointer;
+  font-size: 13px; font-family: inherit; padding: 0;
+}
+.cal-cell:hover:not(.off):not(.empty):not(.sel) { background: var(--bg); }
+.cal-cell.empty { cursor: default; }
+.cal-cell.off { color: var(--muted); opacity: 0.4; cursor: default; }
+.cal-cell.between { background: rgba(34, 211, 238, 0.16); border-radius: 0; }
+.cal-cell.sel { background: var(--cyan); color: #04222a; font-weight: 700; }
+.cal-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 9px; }
+.cal-foot > div { display: flex; gap: 8px; align-items: center; }
+.cal-apply { padding: 6px 12px; font-size: 13px; }
 
 /* resumo / insights */
 .insights { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 11px; }
