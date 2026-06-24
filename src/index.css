@@ -25,7 +25,8 @@
 /* botoes/chips com fundo de cor solida pedem texto branco no claro */
 :root[data-theme="light"] .btn.primary,
 :root[data-theme="light"] .btn.scan,
-:root[data-theme="light"] .chip.active { color: #fff; }
+:root[data-theme="light"] .chip.active,
+:root[data-theme="light"] .scroll-top { color: #fff; }
 html { transition: background 0.15s ease; }
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; }
@@ -68,7 +69,7 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 .btn.scan { background: var(--cyan); color: #04222a; width: 100%; margin-bottom: 10px; }
 .btn.scan:disabled { opacity: 0.6; cursor: default; }
 .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
-.modal { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; width: 540px; max-width: 100%; max-height: 90vh; display: flex; flex-direction: column; }
+.modal { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; width: 540px; max-width: 100%; max-height: 90vh; display: flex; flex-direction: column; position: relative; }
 .modal-head { display: flex; justify-content: space-between; align-items: center; }
 .review-rows { overflow-y: auto; margin: 10px 0; display: flex; flex-direction: column; gap: 8px; }
 .review-row { display: flex; gap: 6px; align-items: center; }
@@ -178,4 +179,22 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
   font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; color: var(--cyan);
   background: var(--bg); border: 1px solid var(--line); border-radius: 9px; padding: 12px; margin: 0;
   white-space: pre-wrap; overflow-x: auto;
+}
+
+/* lancamentos: botao "ver mais" + popup com tudo */
+.ver-mais { width: 100%; margin-top: 10px; background: var(--bg); color: var(--cyan); border: 1px solid var(--line); }
+.ver-mais:hover { border-color: var(--cyan); }
+.tx-scroll { overflow-y: auto; flex: 1; min-height: 0; margin-top: 2px; }
+
+/* setinha "voltar ao topo": SO no mobile */
+.scroll-top { display: none; }
+@media (max-width: 680px) {
+  .scroll-top {
+    display: flex; align-items: center; justify-content: center;
+    position: fixed; right: 16px; bottom: 18px; z-index: 40;
+    width: 40px; height: 40px; padding: 0; border: none; border-radius: 50%;
+    background: var(--cyan); color: #04222a; cursor: pointer;
+    font-size: 19px; line-height: 1; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  }
+  .scroll-top.in-modal { position: absolute; right: 14px; bottom: 14px; z-index: 70; }
 }

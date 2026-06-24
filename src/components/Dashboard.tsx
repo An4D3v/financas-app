@@ -6,6 +6,9 @@ import { ScanReview, type ReviewRow } from './ScanReview'
 import { Settings } from './Settings'
 import { Account } from './Account'
 import { About } from './About'
+import { TxList } from './TxList'
+import { TxModal } from './TxModal'
+import { ScrollTopButton } from './ScrollTopButton'
 import { applyTheme, getStoredTheme, type ThemePref } from '../lib/theme'
 import type { Category, Transaction, Profile } from '../types'
 
@@ -56,6 +59,7 @@ export function Dashboard({ session }: { session: Session }) {
   const menuRef = useRef<HTMLDivElement>(null)
   const [showAccount, setShowAccount] = useState(false)
   const [showAbout, setShowAbout] = useState(false)
+  const [showAll, setShowAll] = useState(false)
   const [theme, setTheme] = useState<ThemePref>(getStoredTheme())
 
   async function load() {
@@ -471,26 +475,12 @@ export function Dashboard({ session }: { session: Session }) {
           </select>
         </div>
         {listTxs.length === 0 && <p className="muted small">nenhum lancamento nesse filtro.</p>}
-        <ul className="txs">
-          {listTxs.map((t) => (
-            <li key={t.id} className="tx">
-              <span className="dot" style={{ background: t.categories?.color ?? '#8B949E' }} />
-              <span className="tx-date">
-                {t.occurred_on.slice(8, 10)}/{t.occurred_on.slice(5, 7)}
-              </span>
-              <span className="tx-desc">
-                {t.description} <small className="muted">{t.categories?.name ?? ''}</small>
-              </span>
-              <span className={'tx-val ' + (t.type === 'entrada' ? 'green' : 'pink')}>
-                {t.type === 'entrada' ? '+' : '-'}
-                {brl(Number(t.amount))}
-              </span>
-              <button className="x" onClick={() => delTx(t.id)} title="excluir">
-                ×
-              </button>
-            </li>
-          ))}
-        </ul>
+        <TxList txs={listTxs.slice(0, 10)} onDelete={delTx} />
+        {listTxs.length > 10 && (
+          <button type="button" className="btn ver-mais" onClick={() => setShowAll(true)}>
+            ver mais {listTxs.length - 10} lancamento{listTxs.length - 10 > 1 ? 's' : ''} →
+          </button>
+        )}
       </section>
 
       {reviewData && (
@@ -527,6 +517,10 @@ export function Dashboard({ session }: { session: Session }) {
       )}
 
       {showAbout && <About onClose={() => setShowAbout(false)} />}
+
+      {showAll && <TxModal txs={listTxs} onDelete={delTx} onClose={() => setShowAll(false)} />}
+
+      {!(reviewData || showSettings || showAccount || showAbout || showAll) && <ScrollTopButton />}
     </div>
   )
 }
