@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import { supabase } from '../lib/supabase'
@@ -6,6 +6,15 @@ import type { Category, Transaction } from '../types'
 
 const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const todayStr = () => new Date().toISOString().slice(0, 10)
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve((reader.result as string).split(',')[1] ?? '')
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
 
 export function Dashboard({ session }: { session: Session }) {
   const [cats, setCats] = useState<Category[]>([])
@@ -18,6 +27,10 @@ export function Dashboard({ session }: { session: Session }) {
   const [catId, setCatId] = useState('')
   const [amount, setAmount] = useState('')
   const [saving, setSaving] = useState(false)
+
+  const [scanning, setScanning] = useState(false)
+  const [scanMsg, setScanMsg] = useState<string | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   async function load() {
     const [catsRes, txRes] = await Promise.all([
@@ -36,6 +49,34 @@ export function Dashboard({ session }: { session: Session }) {
   useEffect(() => {
     load()
   }, [])
+
+  async function onPickPhoto(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setScanning(true)
+    setScanMsg(null)
+    try {
+      const base64 = await fileToBase64(file)
+      const { data, error } = await supabase.functions.invoke('scan-receipt', {
+        body: { image: base64, mimeType: file.type, categories: cats.map((c) => c.name) },
+      })
+      if (error) throw error
+      const res = (data ?? {}) as { merchant?: string; total?: number; date?: string; category?: string; error?: string }
+      if (res.error) throw new Error(res.error)
+      if (res.merchant) setDesc(res.merchant)
+      if (typeof res.total === 'number' && res.total > 0) setAmount(String(res.total).replace('.', ','))
+      if (res.date && /^\d{4}-\d{2}-\d{2}$/.test(res.date)) setDate(res.date)
+      setType('saida')
+      const match = cats.find((c) => c.name.toLowerCase() === (res.category ?? '').toLowerCase())
+      if (match) setCatId(match.id)
+      setScanMsg('Li a nota! Confere os campos e clica Adicionar.')
+    } catch (err) {
+      setScanMsg('Erro ao escanear: ' + (err instanceof Error ? err.message : String(err)))
+    } finally {
+      setScanning(false)
+    }
+  }
 
   async function addTx(e: FormEvent) {
     e.preventDefault()
@@ -123,6 +164,18 @@ export function Dashboard({ session }: { session: Session }) {
       <div className="grid2">
         <section className="card">
           <h2 className="ttl">&gt;_ novo lancamento</h2>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            style={{ display: 'none' }}
+            onChange={onPickPhoto}
+          />
+          <button type="button" className="btn scan" onClick={() => fileRef.current?.click()} disabled={scanning}>
+            {scanning ? 'lendo a nota...' : '📷 Escanear nota'}
+          </button>
+          {scanMsg && <p className="msg">{scanMsg}</p>}
           <form className="form" onSubmit={addTx}>
             <div className="row">
               <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
