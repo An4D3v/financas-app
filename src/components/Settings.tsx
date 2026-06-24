@@ -82,7 +82,7 @@ export function Settings({
         <div className="set-section">
           <span className="set-label">// profissao</span>
           <input
-            placeholder="ex: desenvolvedora .NET"
+            placeholder="ex: desenvolvedora .net"
             value={profession}
             maxLength={60}
             onChange={(e) => setProfession(e.target.value)}
@@ -106,7 +106,7 @@ export function Settings({
             </div>
           )}
           <input
-            placeholder={full ? 'limite de 10 atingido' : 'digite e tecle Enter (ex: violao)'}
+            placeholder={full ? 'limite de 10 atingido' : 'digite e tecle enter (ex: violao)'}
             value={draft}
             disabled={full}
             maxLength={24}
@@ -122,7 +122,7 @@ export function Settings({
               cancelar
             </button>
             <button className="btn primary" disabled={saving} onClick={save}>
-              {saving ? '...' : 'Salvar'}
+              {saving ? '...' : 'salvar'}
             </button>
           </div>
         </div>

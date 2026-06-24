@@ -151,7 +151,7 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 .cal-range { font-family: ui-monospace, Consolas, monospace; color: var(--muted); }
 .cal-range.ok { color: var(--cyan); }
 .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
-.cal-title { font-family: ui-monospace, Consolas, monospace; font-size: 13px; color: var(--cyan); text-transform: capitalize; }
+.cal-title { font-family: ui-monospace, Consolas, monospace; font-size: 13px; color: var(--cyan); }
 .cal-nav { background: var(--bg); border: 1px solid var(--line); color: var(--txt); border-radius: 7px; width: 28px; height: 28px; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; }
 .cal-nav:hover { border-color: var(--cyan); }
 .cal-nav.off { opacity: 0.35; cursor: default; }

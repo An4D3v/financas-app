@@ -1,17 +1,17 @@
 export function About({ isOwner, onClose }: { isOwner: boolean; onClose: () => void }) {
   const stack = [
     'react + typescript + vite',
-    'supabase  (auth · postgres · RLS)',
+    'supabase  (auth · postgres · rls)',
     'gemini    (leitura das notas)',
     'recharts  (graficos)',
   ].join('\n')
 
   const feats: [string, string][] = [
-    ['📷', 'escaneie a nota fiscal e lance no automático (IA)'],
+    ['📷', 'escaneie a nota fiscal e lance no automático (ia)'],
     ['🏷️', 'categorias, filtros por período e calendário'],
     ['📊', 'resumo com insights dos seus gastos'],
     ['🌗', 'tema claro / escuro'],
-    ['⬇️', 'exporte tudo em CSV quando quiser'],
+    ['⬇️', 'exporte tudo em csv quando quiser'],
   ]
 
   return (
@@ -34,7 +34,7 @@ export function About({ isOwner, onClose }: { isOwner: boolean; onClose: () => v
               <p className="muted small">seu dashboard de grana — 100% gratuito, feito por você 💚</p>
               <pre className="about-stack">{stack}</pre>
               <p className="muted small">
-                seus dados sao so seus: cada conta enxerga apenas as proprias linhas (Row Level Security).
+                seus dados sao so seus: cada conta enxerga apenas as proprias linhas (row level security).
               </p>
             </>
           ) : (
@@ -49,10 +49,10 @@ export function About({ isOwner, onClose }: { isOwner: boolean; onClose: () => v
                 ))}
               </ul>
               <p className="muted small">
-                seus dados sao protegidos: cada conta enxerga apenas os proprios dados (Row Level Security).
+                seus dados sao protegidos: cada conta enxerga apenas os proprios dados (row level security).
               </p>
               <p className="small">
-                desenvolvido por <b className="green">Ana</b> 💚
+                desenvolvido por <b className="green">ana</b> 💚
               </p>
             </>
           )}

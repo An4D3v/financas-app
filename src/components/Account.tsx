@@ -30,10 +30,10 @@ export function Account({
     const { error } = await supabase.auth.updateUser({ password: pw })
     setBusy(false)
     if (error) {
-      setMsg('Erro: ' + error.message)
+      setMsg('erro: ' + error.message)
       return
     }
-    setMsg('Senha atualizada! 🔒')
+    setMsg('senha atualizada! 🔒')
     setPw('')
   }
 
@@ -77,14 +77,14 @@ export function Account({
               onChange={(e) => setPw(e.target.value)}
             />
             <button className="btn primary" style={{ flex: 'none' }} disabled={busy || !pw} onClick={changePw}>
-              {busy ? '...' : 'Atualizar'}
+              {busy ? '...' : 'atualizar'}
             </button>
           </div>
           {msg && <p className="msg">{msg}</p>}
         </div>
 
         <div className="modal-foot">
-          <span className="muted small">protegido por RLS — so você acessa</span>
+          <span className="muted small">protegido por rls — so você acessa</span>
           <div>
             <button type="button" className="link" onClick={onClose}>
               fechar

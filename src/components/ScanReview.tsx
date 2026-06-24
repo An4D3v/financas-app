@@ -51,7 +51,7 @@ export function ScanReview({
           </button>
         </div>
         <p className="muted small">
-          {rows.length === 1 ? '1 valor encontrado' : rows.length + ' valores encontrados'}. Confere, edita ou remove antes de adicionar.
+          {rows.length === 1 ? '1 valor encontrado' : rows.length + ' valores encontrados'}. confere, edita ou remove antes de adicionar.
         </p>
         <div className="row" style={{ marginBottom: 8 }}>
           <label className="muted small" style={{ flex: 'none', alignSelf: 'center' }}>
@@ -66,7 +66,7 @@ export function ScanReview({
                 type="button"
                 className={'rev-type ' + (r.type === 'entrada' ? 'is-in' : 'is-out')}
                 onClick={() => update(i, { type: r.type === 'entrada' ? 'saida' : 'entrada' })}
-                title={r.type === 'entrada' ? 'Entrada (receita) — clique p/ saída' : 'Saída (gasto) — clique p/ entrada'}
+                title={r.type === 'entrada' ? 'entrada (receita) — clique p/ saída' : 'saída (gasto) — clique p/ entrada'}
                 aria-pressed={r.type === 'entrada'}
               >
                 <span className="dot" />
@@ -115,7 +115,7 @@ export function ScanReview({
               cancelar
             </button>
             <button className="btn primary" disabled={saving || rows.length === 0} onClick={confirm}>
-              {saving ? '...' : 'Adicionar ' + rows.length}
+              {saving ? '...' : 'adicionar ' + rows.length}
             </button>
           </div>
         </div>

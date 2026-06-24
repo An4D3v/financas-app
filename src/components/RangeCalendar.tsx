@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const WD = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
+const WD = ['d', 's', 't', 'q', 'q', 's', 's']
 const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
 
 const ymd = (y: number, m: number, d: number) =>

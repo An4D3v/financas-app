@@ -129,7 +129,7 @@ export function Dashboard({ session }: { session: Session }) {
   function exportCSV() {
     setMenuOpen(false)
     if (!txs.length) {
-      alert('Nada pra exportar ainda — adiciona uns lancamentos primeiro. :)')
+      alert('nada pra exportar ainda — adiciona uns lancamentos primeiro. :)')
       return
     }
     const header = ['data', 'tipo', 'descricao', 'categoria', 'valor']
@@ -215,7 +215,7 @@ export function Dashboard({ session }: { session: Session }) {
       if (res.error) throw new Error(res.error)
       const items = res.items ?? []
       if (!items.length) {
-        setScanMsg('Nao consegui ler valores nessa foto. Tenta uma mais nitida e reta, ou preenche manual.')
+        setScanMsg('nao consegui ler valores nessa foto. tenta uma mais nitida e reta, ou preenche manual.')
         return
       }
       const rows: ReviewRow[] = items.map((it) => ({
@@ -227,7 +227,7 @@ export function Dashboard({ session }: { session: Session }) {
       const scanDate = res.date && /^\d{4}-\d{2}-\d{2}$/.test(res.date) ? res.date : todayStr()
       setReviewData({ merchant: res.merchant ?? '', date: scanDate, rows })
     } catch (err) {
-      setScanMsg('Erro ao escanear: ' + (err instanceof Error ? err.message : String(err)))
+      setScanMsg('erro ao escanear: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setScanning(false)
     }
@@ -338,7 +338,7 @@ export function Dashboard({ session }: { session: Session }) {
     const m = new Map<string, { name: string; value: number; color: string }>()
     for (const t of periodTxs) {
       if (t.type !== 'saida') continue
-      const name = t.categories?.name ?? 'Sem categoria'
+      const name = t.categories?.name ?? 'sem categoria'
       const color = t.categories?.color ?? '#8B949E'
       const cur = m.get(name) ?? { name, value: 0, color }
       cur.value += Number(t.amount)
@@ -509,7 +509,7 @@ export function Dashboard({ session }: { session: Session }) {
             <li className="insight">
               <span className="ins-ico">📷</span>
               <span>
-                <b>escaneie uma nota fiscal</b> — a IA lança automático pra você
+                <b>escaneie uma nota fiscal</b> — a ia lança automático pra você
               </span>
             </li>
             <li className="insight">
@@ -520,7 +520,7 @@ export function Dashboard({ session }: { session: Session }) {
             </li>
             <li className="insight">
               <span className="ins-ico">📊</span>
-              <span>conforme você usa, surgem os KPIs, o gráfico e os insights</span>
+              <span>conforme você usa, surgem os números, o gráfico e os insights</span>
             </li>
           </ul>
         </section>
@@ -535,7 +535,7 @@ export function Dashboard({ session }: { session: Session }) {
               className={'chip' + (period === p ? ' active' : '')}
               onClick={() => setPeriod(p)}
             >
-              {p === 'dia' ? 'Dia' : p === 'semana' ? 'Semana' : p === 'mes' ? 'Mês' : 'Tudo'}
+              {p === 'dia' ? 'dia' : p === 'semana' ? 'semana' : p === 'mes' ? 'mês' : 'tudo'}
             </button>
           ))}
           <div className="cal-wrap" ref={calRef}>
@@ -591,15 +591,15 @@ export function Dashboard({ session }: { session: Session }) {
             onChange={onPickPhoto}
           />
           <button type="button" className="btn scan" onClick={() => fileRef.current?.click()} disabled={scanning}>
-            {scanning ? 'lendo a nota...' : '📷 Escanear nota'}
+            {scanning ? 'lendo a nota...' : '📷 escanear nota'}
           </button>
           {scanMsg && <p className="msg">{scanMsg}</p>}
           <form className="form" onSubmit={addTx}>
             <div className="row">
               <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
               <select value={type} onChange={(e) => setType(e.target.value as 'entrada' | 'saida')}>
-                <option value="saida">Saida</option>
-                <option value="entrada">Entrada</option>
+                <option value="saida">saida</option>
+                <option value="entrada">entrada</option>
               </select>
             </div>
             <input placeholder="descricao" value={desc} onChange={(e) => setDesc(e.target.value)} />
@@ -615,7 +615,7 @@ export function Dashboard({ session }: { session: Session }) {
               <input inputMode="decimal" placeholder="valor R$" value={amount} onChange={(e) => setAmount(e.target.value)} />
             </div>
             <button className="btn primary" disabled={saving}>
-              {saving ? '...' : 'Adicionar'}
+              {saving ? '...' : 'adicionar'}
             </button>
           </form>
         </section>

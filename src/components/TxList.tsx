@@ -109,7 +109,7 @@ function TxRow({
       <button
         type="button"
         className={'tx-type ' + (tx.type === 'entrada' ? 'is-in' : 'is-out')}
-        title={tx.type === 'entrada' ? 'Entrada — clique p/ virar saída' : 'Saída — clique p/ virar entrada'}
+        title={tx.type === 'entrada' ? 'entrada — clique p/ virar saída' : 'saída — clique p/ virar entrada'}
         onClick={() => onUpdate(tx.id, { type: tx.type === 'entrada' ? 'saida' : 'entrada' })}
       >
         {tx.type === 'entrada' ? '+' : '−'}

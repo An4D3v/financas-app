@@ -20,7 +20,7 @@ export function Login() {
     if (error) setMsg(error.message)
     // se veio sessao, o onAuthStateChange ja loga sozinho; senao, precisa confirmar e-mail
     else if (mode === 'up' && !data.session)
-      setMsg('Quase lá! 📧 Te enviamos um e-mail de confirmação — confirma e faz o login.')
+      setMsg('quase lá! 📧 te enviamos um e-mail de confirmação — confirma e faz o login.')
     setBusy(false)
   }
 
@@ -48,11 +48,11 @@ export function Login() {
           minLength={6}
         />
         <button className="btn primary" disabled={busy}>
-          {busy ? '...' : mode === 'in' ? 'Entrar' : 'Cadastrar'}
+          {busy ? '...' : mode === 'in' ? 'entrar' : 'cadastrar'}
         </button>
         {msg && <p className="msg">{msg}</p>}
         <button type="button" className="link" onClick={() => { setMode(mode === 'in' ? 'up' : 'in'); setMsg(null) }}>
-          {mode === 'in' ? 'Nao tem conta? Cadastre-se' : 'Ja tem conta? Entrar'}
+          {mode === 'in' ? 'nao tem conta? cadastre-se' : 'ja tem conta? entrar'}
         </button>
       </form>
     </div>
