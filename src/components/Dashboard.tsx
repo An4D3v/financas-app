@@ -20,6 +20,12 @@ function daysAgoStr(n: number) {
   return d.toISOString().slice(0, 10)
 }
 
+function sumSaidaWhere(txs: Transaction[], pred: (occurredOn: string) => boolean) {
+  let s = 0
+  for (const t of txs) if (t.type === 'saida' && pred(t.occurred_on)) s += Number(t.amount)
+  return s
+}
+
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -311,6 +317,55 @@ export function Dashboard({ session }: { session: Session }) {
 
   const periodLabel = period === 'dia' ? 'hoje' : period === 'semana' ? '7 dias' : period === 'mes' ? 'mês' : 'tudo'
 
+  const insights = useMemo(() => {
+    const today = todayStr()
+    const savingRate = renda > 0 ? (saldo / renda) * 100 : null
+    const top = pieData[0] ?? null
+    const topPct = top && gastos > 0 ? (top.value / gastos) * 100 : 0
+
+    // dias decorridos do periodo (p/ media diaria)
+    let days = 1
+    if (period === 'semana') days = 7
+    else if (period === 'mes') days = Number(today.slice(8, 10))
+    else if (period === 'tudo') {
+      const ds = periodTxs.map((t) => t.occurred_on).sort()
+      if (ds.length) {
+        const ms = new Date(today + 'T00:00:00').getTime() - new Date(ds[0] + 'T00:00:00').getTime()
+        days = Math.max(1, Math.round(ms / 86400000) + 1)
+      }
+    }
+    const dailyAvg = days > 0 ? gastos / days : gastos
+
+    let biggest: Transaction | null = null
+    for (const t of periodTxs) {
+      if (t.type !== 'saida') continue
+      if (!biggest || Number(t.amount) > Number(biggest.amount)) biggest = t
+    }
+
+    // gastos do periodo anterior equivalente (p/ comparacao)
+    let prevGastos: number | null = null
+    let prevLabel = ''
+    if (period === 'mes') {
+      const d = new Date(today + 'T00:00:00')
+      const prev = new Date(d.getFullYear(), d.getMonth() - 1, 1)
+      const prevYm = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`
+      prevGastos = sumSaidaWhere(txs, (on) => on.slice(0, 7) === prevYm)
+      prevLabel = 'mês passado'
+    } else if (period === 'semana') {
+      const start = daysAgoStr(13)
+      const end = daysAgoStr(7)
+      prevGastos = sumSaidaWhere(txs, (on) => on >= start && on <= end)
+      prevLabel = 'semana anterior'
+    } else if (period === 'dia') {
+      const y = daysAgoStr(1)
+      prevGastos = sumSaidaWhere(txs, (on) => on === y)
+      prevLabel = 'ontem'
+    }
+    const pct = prevGastos != null && prevGastos > 0 ? ((gastos - prevGastos) / prevGastos) * 100 : null
+
+    return { savingRate, top, topPct, dailyAvg, biggest, pct, prevLabel }
+  }, [txs, periodTxs, period, renda, gastos, saldo, pieData])
+
   if (loading) return <div className="center muted">carregando seus dados...</div>
 
   return (
@@ -484,6 +539,73 @@ export function Dashboard({ session }: { session: Session }) {
           )}
         </section>
       </div>
+
+      <section className="card">
+        <h2 className="ttl">&gt;_ resumo · {periodLabel}</h2>
+        {periodTxs.length === 0 ? (
+          <p className="muted small">sem lançamentos nesse período pra resumir ainda.</p>
+        ) : (
+          <ul className="insights">
+            {insights.savingRate != null && (
+              <li className="insight">
+                <span className="ins-ico">{saldo >= 0 ? '💰' : '⚠️'}</span>
+                {saldo >= 0 ? (
+                  <span>
+                    você guardou <b className="green">{insights.savingRate.toFixed(0)}%</b> da sua renda nesse período
+                  </span>
+                ) : (
+                  <span>
+                    atenção: gastou <b className="red">{brl(-saldo)}</b> a mais do que ganhou
+                  </span>
+                )}
+              </li>
+            )}
+            {insights.top && (
+              <li className="insight">
+                <span className="ins-ico">📊</span>
+                <span>
+                  <b style={{ color: insights.top.color }}>{insights.top.name}</b> é seu maior gasto:{' '}
+                  <b className="pink">{brl(insights.top.value)}</b>{' '}
+                  <span className="muted">({insights.topPct.toFixed(0)}% do total)</span>
+                </span>
+              </li>
+            )}
+            {gastos > 0 && period !== 'dia' && (
+              <li className="insight">
+                <span className="ins-ico">📅</span>
+                <span>
+                  média de <b className="cyan">{brl(insights.dailyAvg)}</b> por dia em gastos
+                </span>
+              </li>
+            )}
+            {insights.pct != null && (
+              <li className="insight">
+                <span className="ins-ico">{insights.pct > 0 ? '📈' : insights.pct < 0 ? '📉' : '➖'}</span>
+                {insights.pct > 0 ? (
+                  <span>
+                    você gastou <b className="red">{insights.pct.toFixed(0)}% a mais</b> que {insights.prevLabel}
+                  </span>
+                ) : insights.pct < 0 ? (
+                  <span>
+                    boa! <b className="green">{Math.abs(insights.pct).toFixed(0)}% a menos</b> que {insights.prevLabel}
+                  </span>
+                ) : (
+                  <span>gasto igual ao de {insights.prevLabel}</span>
+                )}
+              </li>
+            )}
+            {insights.biggest && (
+              <li className="insight">
+                <span className="ins-ico">🔝</span>
+                <span>
+                  maior saída: <b>{insights.biggest.description}</b> ·{' '}
+                  <b className="pink">{brl(Number(insights.biggest.amount))}</b>
+                </span>
+              </li>
+            )}
+          </ul>
+        )}
+      </section>
 
       <section className="card">
         <div className="card-head">
