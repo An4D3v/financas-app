@@ -3,7 +3,9 @@ import type { Session } from '@supabase/supabase-js'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import { supabase } from '../lib/supabase'
 import { ScanReview, type ReviewRow } from './ScanReview'
-import type { Category, Transaction } from '../types'
+import { Settings } from './Settings'
+import { applyTheme, getStoredTheme, type ThemePref } from '../lib/theme'
+import type { Category, Transaction, Profile } from '../types'
 
 const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const todayStr = () => new Date().toISOString().slice(0, 10)
@@ -46,18 +48,50 @@ export function Dashboard({ session }: { session: Session }) {
   const [period, setPeriod] = useState<'dia' | 'semana' | 'mes' | 'tudo'>('mes')
   const [catFilter, setCatFilter] = useState('')
 
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [showSettings, setShowSettings] = useState(false)
+  const [theme, setTheme] = useState<ThemePref>(getStoredTheme())
+
   async function load() {
-    const [catsRes, txRes] = await Promise.all([
+    const [catsRes, txRes, profRes] = await Promise.all([
       supabase.from('categories').select('*').order('name'),
       supabase
         .from('transactions')
         .select('*, categories(name, color)')
         .order('occurred_on', { ascending: false })
         .order('created_at', { ascending: false }),
+      supabase.from('profiles').select('*').maybeSingle(),
     ])
     setCats((catsRes.data as Category[]) ?? [])
     setTxs((txRes.data as Transaction[]) ?? [])
+    const prof = (profRes.data as Profile | null) ?? null
+    setProfile(prof)
+    if (prof?.theme) {
+      setTheme(prof.theme)
+      applyTheme(prof.theme)
+    }
     setLoading(false)
+  }
+
+  function onThemeChange(t: ThemePref) {
+    setTheme(t)
+    applyTheme(t)
+  }
+
+  async function saveProfile(data: { profession: string; hobbies: string[]; theme: ThemePref }) {
+    const payload = {
+      profession: data.profession || null,
+      hobbies: data.hobbies,
+      theme: data.theme,
+      updated_at: new Date().toISOString(),
+    }
+    const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'user_id' })
+    if (error) {
+      alert(error.message)
+      return
+    }
+    setProfile((p) => ({ ...(p ?? { user_id: session.user.id }), ...payload } as Profile))
+    setShowSettings(false)
   }
 
   useEffect(() => {
@@ -79,7 +113,7 @@ export function Dashboard({ session }: { session: Session }) {
       const res = (data ?? {}) as {
         merchant?: string
         date?: string
-        items?: { description?: string; value?: number; category?: string }[]
+        items?: { description?: string; value?: number; category?: string; type?: string }[]
         error?: string
       }
       if (res.error) throw new Error(res.error)
@@ -92,6 +126,7 @@ export function Dashboard({ session }: { session: Session }) {
         description: (it.description ?? '').trim(),
         value: (Number(it.value) || 0).toFixed(2).replace('.', ','),
         categoryId: cats.find((c) => c.name.toLowerCase() === (it.category ?? '').toLowerCase())?.id ?? '',
+        type: it.type === 'entrada' ? 'entrada' : 'saida',
       }))
       const scanDate = res.date && /^\d{4}-\d{2}-\d{2}$/.test(res.date) ? res.date : todayStr()
       setReviewData({ merchant: res.merchant ?? '', date: scanDate, rows })
@@ -129,7 +164,7 @@ export function Dashboard({ session }: { session: Session }) {
     const toInsert = rows
       .map((r) => ({
         occurred_on: date,
-        type: 'saida' as const,
+        type: r.type,
         description: r.description.trim(),
         amount: Number(r.value.replace(',', '.')) || 0,
         category_id: r.categoryId || null,
@@ -201,12 +236,29 @@ export function Dashboard({ session }: { session: Session }) {
   return (
     <div className="app">
       <header className="topbar">
-        <h1 className="brand">
-          {handle}@finanças<span className="accent">:~$</span> <span className="dim">dashboard</span>
-        </h1>
-        <button className="link" onClick={() => supabase.auth.signOut()}>
-          sair ({session.user.email})
-        </button>
+        <div className="brand-wrap">
+          <h1 className="brand">
+            {handle}@finanças<span className="accent">:~$</span> <span className="dim">dashboard</span>
+          </h1>
+          {(profile?.profession || (profile?.hobbies?.length ?? 0) > 0) && (
+            <p className="bio">
+              {profile?.profession && <span className="bio-prof">// {profile.profession}</span>}
+              {profile?.hobbies?.map((h) => (
+                <span key={h} className="bio-tag">
+                  #{h}
+                </span>
+              ))}
+            </p>
+          )}
+        </div>
+        <div className="topbar-actions">
+          <button className="icon-btn" title="configuracoes" aria-label="configuracoes" onClick={() => setShowSettings(true)}>
+            ⚙️
+          </button>
+          <button className="btn ghost" onClick={() => supabase.auth.signOut()}>
+            Sair
+          </button>
+        </div>
       </header>
 
       <div className="filters">
@@ -287,12 +339,12 @@ export function Dashboard({ session }: { session: Session }) {
               <PieChart>
                 <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={45} outerRadius={85} paddingAngle={2}>
                   {pieData.map((d, i) => (
-                    <Cell key={i} fill={d.color} stroke="#0D1117" />
+                    <Cell key={i} fill={d.color} stroke="var(--bg)" />
                   ))}
                 </Pie>
                 <Tooltip
                   formatter={(value: any) => brl(Number(value))}
-                  contentStyle={{ background: '#161B22', border: '1px solid #30363D', borderRadius: 8, color: '#E6EDF3' }}
+                  contentStyle={{ background: 'var(--panel)', border: '1px solid var(--line)', borderRadius: 8, color: 'var(--txt)' }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -345,6 +397,18 @@ export function Dashboard({ session }: { session: Session }) {
           categories={cats}
           onCancel={() => setReviewData(null)}
           onConfirm={handleBulkInsert}
+        />
+      )}
+
+      {showSettings && (
+        <Settings
+          email={session.user.email ?? ''}
+          profession={profile?.profession ?? ''}
+          hobbies={profile?.hobbies ?? []}
+          theme={theme}
+          onTheme={onThemeChange}
+          onClose={() => setShowSettings(false)}
+          onSave={saveProfile}
         />
       )}
     </div>

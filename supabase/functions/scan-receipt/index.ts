@@ -29,9 +29,10 @@ Deno.serve(async (req) => {
       "Voce le notas fiscais, cupons fiscais e comprovantes brasileiros. Leia a imagem com MUITA atencao e extraia:\n" +
       "- merchant: nome do estabelecimento/loja\n" +
       "- date: data da compra em YYYY-MM-DD; se nao achar, string vazia\n" +
-      "- items: a lista de valores/itens da nota. Para CADA item retorne: description (nome do produto ou do gasto), value (numero com ponto decimal, ex 12.34) e category (escolha exatamente UMA da lista: " +
+      "- items: a lista de valores/itens da nota. Para CADA item retorne: description (nome do produto ou do gasto), value (numero com ponto decimal, ex 12.34), category (escolha exatamente UMA da lista: " +
       cats.join("; ") +
-      ").\n" +
+      ") e type.\n" +
+      "- type: classifique CADA item como \"saida\" (gasto/despesa/compra/pagamento/debito) ou \"entrada\" (receita/recebimento/deposito/PIX recebido/transferencia recebida/salario/venda/credito). A maioria das notas e de gastos (saida). Um MESMO comprovante pode conter entradas E saidas ao mesmo tempo — classifique cada item pela sua propria natureza, nao pelo conjunto. Na duvida, use \"saida\".\n" +
       "Se a nota tiver varios produtos/valores distintos, retorne um item para CADA um. Se houver apenas um valor (um total unico), retorne UM unico item com description igual ao nome da loja (ou 'Compra') e value igual ao total.\n" +
       "Se a imagem claramente nao for uma nota/cupom/comprovante, retorne items como lista vazia.";
 
@@ -62,8 +63,9 @@ Deno.serve(async (req) => {
                   description: { type: "string" },
                   value: { type: "number" },
                   category: { type: "string" },
+                  type: { type: "string", enum: ["entrada", "saida"] },
                 },
-                required: ["description", "value", "category"],
+                required: ["description", "value", "category", "type"],
               },
             },
           },

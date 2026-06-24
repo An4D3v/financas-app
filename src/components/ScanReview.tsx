@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Category } from '../types'
 
-export type ReviewRow = { description: string; value: string; categoryId: string }
+export type ReviewRow = { description: string; value: string; categoryId: string; type: 'entrada' | 'saida' }
 
 const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
@@ -24,7 +24,10 @@ export function ScanReview({
   const [d, setD] = useState(date)
   const [saving, setSaving] = useState(false)
 
-  const total = rows.reduce((s, r) => s + (Number(r.value.replace(',', '.')) || 0), 0)
+  const num = (v: string) => Number(v.replace(',', '.')) || 0
+  const out = rows.filter((r) => r.type === 'saida').reduce((s, r) => s + num(r.value), 0)
+  const inc = rows.filter((r) => r.type === 'entrada').reduce((s, r) => s + num(r.value), 0)
+  const hasIn = inc > 0
 
   function update(i: number, patch: Partial<ReviewRow>) {
     setRows((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))
@@ -59,6 +62,16 @@ export function ScanReview({
         <div className="review-rows">
           {rows.map((r, i) => (
             <div key={i} className="review-row">
+              <button
+                type="button"
+                className={'rev-type ' + (r.type === 'entrada' ? 'is-in' : 'is-out')}
+                onClick={() => update(i, { type: r.type === 'entrada' ? 'saida' : 'entrada' })}
+                title={r.type === 'entrada' ? 'Entrada (receita) — clique p/ saída' : 'Saída (gasto) — clique p/ entrada'}
+                aria-pressed={r.type === 'entrada'}
+              >
+                <span className="dot" />
+                {r.type === 'entrada' ? 'entrada' : 'saída'}
+              </button>
               <input
                 className="rev-desc"
                 placeholder="descricao"
@@ -88,9 +101,15 @@ export function ScanReview({
           {rows.length === 0 && <p className="muted small">nenhum item. cancela e tenta outra foto.</p>}
         </div>
         <div className="modal-foot">
-          <span className="muted small">
-            total: <b className="cyan">{brl(total)}</b>
-          </span>
+          {hasIn ? (
+            <span className="muted small">
+              saídas <b className="pink">{brl(out)}</b> · entradas <b className="green">{brl(inc)}</b>
+            </span>
+          ) : (
+            <span className="muted small">
+              total: <b className="cyan">{brl(out)}</b>
+            </span>
+          )}
           <div>
             <button type="button" className="link" onClick={onCancel}>
               cancelar

@@ -5,6 +5,14 @@ export type Category = {
   color: string | null
 }
 
+export type Profile = {
+  user_id: string
+  profession: string | null
+  hobbies: string[]
+  theme: 'system' | 'light' | 'dark'
+  updated_at?: string
+}
+
 export type Transaction = {
   id: string
   occurred_on: string // YYYY-MM-DD
