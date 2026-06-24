@@ -27,12 +27,13 @@ Deno.serve(async (req) => {
     const cats: string[] = Array.isArray(categories) ? categories : [];
     const prompt =
       "Voce le notas fiscais, cupons fiscais e comprovantes brasileiros. Leia a imagem com MUITA atencao e extraia:\n" +
-      "- merchant: nome do estabelecimento/loja (geralmente no topo da nota)\n" +
-      "- total: o VALOR TOTAL pago, como numero com ponto decimal (ex: 54.98). Procure por TOTAL, VALOR A PAGAR, VALOR TOTAL, VL TOTAL; normalmente e o maior valor da nota\n" +
-      "- date: a data da compra no formato YYYY-MM-DD; se nao encontrar, retorne string vazia\n" +
-      "- category: escolha exatamente UMA categoria desta lista que melhor descreve a compra: " +
+      "- merchant: nome do estabelecimento/loja\n" +
+      "- date: data da compra em YYYY-MM-DD; se nao achar, string vazia\n" +
+      "- items: a lista de valores/itens da nota. Para CADA item retorne: description (nome do produto ou do gasto), value (numero com ponto decimal, ex 12.34) e category (escolha exatamente UMA da lista: " +
       cats.join("; ") +
-      "\nExtraia tudo que conseguir ler, mesmo que parcial. Se a imagem claramente nao for uma nota/cupom, retorne merchant vazio e total 0.";
+      ").\n" +
+      "Se a nota tiver varios produtos/valores distintos, retorne um item para CADA um. Se houver apenas um valor (um total unico), retorne UM unico item com description igual ao nome da loja (ou 'Compra') e value igual ao total.\n" +
+      "Se a imagem claramente nao for uma nota/cupom/comprovante, retorne items como lista vazia.";
 
     const model = Deno.env.get("GEMINI_MODEL") ?? "gemini-flash-lite-latest";
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
@@ -52,11 +53,21 @@ Deno.serve(async (req) => {
           type: "object",
           properties: {
             merchant: { type: "string" },
-            total: { type: "number" },
             date: { type: "string" },
-            category: { type: "string" },
+            items: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  description: { type: "string" },
+                  value: { type: "number" },
+                  category: { type: "string" },
+                },
+                required: ["description", "value", "category"],
+              },
+            },
           },
-          required: ["merchant", "total", "date", "category"],
+          required: ["merchant", "date", "items"],
         },
       },
     };
@@ -79,7 +90,7 @@ Deno.serve(async (req) => {
       console.error("resposta nao-JSON", String(text).slice(0, 400));
       return jsonResponse({ error: "resposta da IA nao foi JSON", raw: text }, 502);
     }
-    console.log("scan resultado", JSON.stringify(parsed).slice(0, 300));
+    console.log("scan resultado", JSON.stringify(parsed).slice(0, 400));
     return jsonResponse(parsed);
   } catch (e) {
     console.error("scan-receipt EXCECAO", String(e));

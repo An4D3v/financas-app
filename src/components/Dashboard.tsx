@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent 
 import type { Session } from '@supabase/supabase-js'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import { supabase } from '../lib/supabase'
+import { ScanReview, type ReviewRow } from './ScanReview'
 import type { Category, Transaction } from '../types'
 
 const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -36,6 +37,7 @@ export function Dashboard({ session }: { session: Session }) {
   const [scanning, setScanning] = useState(false)
   const [scanMsg, setScanMsg] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const [reviewData, setReviewData] = useState<{ merchant: string; date: string; rows: ReviewRow[] } | null>(null)
 
   async function load() {
     const [catsRes, txRes] = await Promise.all([
@@ -67,30 +69,25 @@ export function Dashboard({ session }: { session: Session }) {
         body: { image: base64, mimeType: file.type, categories: cats.map((c) => c.name) },
       })
       if (error) throw error
-      const res = (data ?? {}) as { merchant?: string; total?: number | string; date?: string; category?: string; error?: string }
+      const res = (data ?? {}) as {
+        merchant?: string
+        date?: string
+        items?: { description?: string; value?: number; category?: string }[]
+        error?: string
+      }
       if (res.error) throw new Error(res.error)
-      const total = Number(res.total)
-      const achei: string[] = []
-      if (res.merchant) {
-        setDesc(res.merchant)
-        achei.push(res.merchant)
+      const items = res.items ?? []
+      if (!items.length) {
+        setScanMsg('Nao consegui ler valores nessa foto. Tenta uma mais nitida e reta, ou preenche manual.')
+        return
       }
-      if (total > 0) {
-        setAmount(total.toFixed(2).replace('.', ','))
-        achei.push(brl(total))
-      }
-      if (res.date && /^\d{4}-\d{2}-\d{2}$/.test(res.date)) {
-        setDate(res.date)
-        achei.push(res.date)
-      }
-      setType('saida')
-      const match = cats.find((c) => c.name.toLowerCase() === (res.category ?? '').toLowerCase())
-      if (match) setCatId(match.id)
-      setScanMsg(
-        achei.length
-          ? 'Li: ' + achei.join(' · ') + '. Confere e clica Adicionar.'
-          : 'Nao consegui ler os dados dessa foto. Tenta uma mais nitida e reta, ou preenche manual.',
-      )
+      const rows: ReviewRow[] = items.map((it) => ({
+        description: (it.description ?? '').trim(),
+        value: (Number(it.value) || 0).toFixed(2).replace('.', ','),
+        categoryId: cats.find((c) => c.name.toLowerCase() === (it.category ?? '').toLowerCase())?.id ?? '',
+      }))
+      const scanDate = res.date && /^\d{4}-\d{2}-\d{2}$/.test(res.date) ? res.date : todayStr()
+      setReviewData({ merchant: res.merchant ?? '', date: scanDate, rows })
     } catch (err) {
       setScanMsg('Erro ao escanear: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
@@ -118,6 +115,29 @@ export function Dashboard({ session }: { session: Session }) {
     }
     setDesc('')
     setAmount('')
+    load()
+  }
+
+  async function handleBulkInsert(rows: ReviewRow[], date: string) {
+    const toInsert = rows
+      .map((r) => ({
+        occurred_on: date,
+        type: 'saida' as const,
+        description: r.description.trim(),
+        amount: Number(r.value.replace(',', '.')) || 0,
+        category_id: r.categoryId || null,
+        source: 'foto' as const,
+      }))
+      .filter((r) => r.description && r.amount > 0)
+    if (toInsert.length) {
+      const { error } = await supabase.from('transactions').insert(toInsert)
+      if (error) {
+        alert(error.message)
+        return
+      }
+    }
+    setReviewData(null)
+    setScanMsg(toInsert.length ? toInsert.length + ' lancamento(s) adicionado(s) pela nota.' : null)
     load()
   }
 
@@ -268,6 +288,17 @@ export function Dashboard({ session }: { session: Session }) {
           ))}
         </ul>
       </section>
+
+      {reviewData && (
+        <ScanReview
+          merchant={reviewData.merchant}
+          date={reviewData.date}
+          items={reviewData.rows}
+          categories={cats}
+          onCancel={() => setReviewData(null)}
+          onConfirm={handleBulkInsert}
+        />
+      )}
     </div>
   )
 }

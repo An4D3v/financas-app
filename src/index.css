@@ -50,6 +50,22 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 .btn.primary:disabled { opacity: 0.6; cursor: default; }
 .btn.scan { background: var(--cyan); color: #04222a; width: 100%; margin-bottom: 10px; }
 .btn.scan:disabled { opacity: 0.6; cursor: default; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+.modal { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; width: 540px; max-width: 100%; max-height: 90vh; display: flex; flex-direction: column; }
+.modal-head { display: flex; justify-content: space-between; align-items: center; }
+.review-rows { overflow-y: auto; margin: 10px 0; display: flex; flex-direction: column; gap: 8px; }
+.review-row { display: flex; gap: 6px; align-items: center; }
+.review-row .rev-desc { flex: 2; }
+.review-row select { flex: 1.4; }
+.review-row .rev-val { flex: 1; text-align: right; }
+.modal-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; margin-top: 4px; }
+.modal-foot > div { display: flex; gap: 10px; align-items: center; }
+@media (max-width: 560px) {
+  .review-row { flex-wrap: wrap; }
+  .review-row .rev-desc { flex: 1 1 60%; }
+  .review-row .rev-val { flex: 1 1 30%; }
+  .review-row select { flex: 1 1 100%; }
+}
 .link { background: none; border: none; color: var(--cyan); cursor: pointer; font-size: 13px; padding: 6px 0; }
 .auth { width: 320px; max-width: 100%; display: flex; flex-direction: column; gap: 12px; text-align: center; }
 .auth input { text-align: center; }
