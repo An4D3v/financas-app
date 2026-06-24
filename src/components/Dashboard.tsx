@@ -50,6 +50,8 @@ export function Dashboard({ session }: { session: Session }) {
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [showSettings, setShowSettings] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const [theme, setTheme] = useState<ThemePref>(getStoredTheme())
 
   async function load() {
@@ -97,6 +99,23 @@ export function Dashboard({ session }: { session: Session }) {
   useEffect(() => {
     load()
   }, [])
+
+  // fecha o menu ao clicar fora ou apertar Esc
+  useEffect(() => {
+    if (!menuOpen) return
+    function onDoc(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDoc)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [menuOpen])
 
   async function onPickPhoto(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -251,13 +270,41 @@ export function Dashboard({ session }: { session: Session }) {
             </p>
           )}
         </div>
-        <div className="topbar-actions">
-          <button className="icon-btn" title="configuracoes" aria-label="configuracoes" onClick={() => setShowSettings(true)}>
-            ⚙️
+        <div className="menu-wrap" ref={menuRef}>
+          <button
+            className="icon-btn menu-btn"
+            title="menu"
+            aria-label="menu"
+            aria-haspopup="true"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((o) => !o)}
+          >
+            ≡
           </button>
-          <button className="btn ghost" onClick={() => supabase.auth.signOut()}>
-            Sair
-          </button>
+          {menuOpen && (
+            <div className="menu" role="menu">
+              <button
+                className="menu-item"
+                role="menuitem"
+                onClick={() => {
+                  setMenuOpen(false)
+                  setShowSettings(true)
+                }}
+              >
+                <span className="menu-ico">⚙️</span> configuracoes
+              </button>
+              <button
+                className="menu-item danger"
+                role="menuitem"
+                onClick={() => {
+                  setMenuOpen(false)
+                  supabase.auth.signOut()
+                }}
+              >
+                <span className="menu-ico">🚪</span> sair
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
