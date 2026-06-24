@@ -55,7 +55,7 @@ export function RangeCalendar({
       if (b < a) [a, b] = [b, a]
       setStart(a)
       setEnd(b)
-      onApply(a, b) // auto-aplica no segundo clique
+      // nao aplica direto — deixa a Ana ver a selecao e clicar em salvar
     }
   }
 
@@ -110,16 +110,21 @@ export function RangeCalendar({
       </div>
 
       <div className="cal-foot">
-        <span className="muted small">{start ? (end ? `${br(start)} → ${br(end)}` : `de ${br(start)}…`) : 'clique 2 dias'}</span>
+        <span className={'small cal-range' + (start && end ? ' ok' : '')}>
+          {start ? (end ? `${br(start)} → ${br(end)}` : `${br(start)} → escolha o fim`) : 'clique no dia inicial'}
+        </span>
         <div>
           <button type="button" className="link" onClick={onClose}>
             fechar
           </button>
-          {start && (
-            <button type="button" className="btn primary cal-apply" onClick={() => onApply(start, end || start)}>
-              aplicar
-            </button>
-          )}
+          <button
+            type="button"
+            className="btn primary cal-apply"
+            disabled={!start}
+            onClick={() => start && onApply(start, end || start)}
+          >
+            salvar
+          </button>
         </div>
       </div>
     </div>
