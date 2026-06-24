@@ -76,7 +76,7 @@ export function Dashboard({ session }: { session: Session }) {
         achei.push(res.merchant)
       }
       if (total > 0) {
-        setAmount(String(total).replace('.', ','))
+        setAmount(total.toFixed(2).replace('.', ','))
         achei.push(brl(total))
       }
       if (res.date && /^\d{4}-\d{2}-\d{2}$/.test(res.date)) {
