@@ -21,6 +21,9 @@ function daysAgoStr(n: number) {
   return d.toISOString().slice(0, 10)
 }
 
+// dona do app (Ana) — vê o "sobre" pessoal; visitantes/testers veem a versao produto
+const OWNER_ID = '35e0eaf1-d4cc-4caa-91e4-e2d9518c58a7'
+
 const brDate = (d: string) => (d ? d.slice(8, 10) + '/' + d.slice(5, 7) : '')
 
 function addDays(dateStr: string, n: number) {
@@ -735,7 +738,7 @@ export function Dashboard({ session }: { session: Session }) {
         />
       )}
 
-      {showAbout && <About onClose={() => setShowAbout(false)} />}
+      {showAbout && <About isOwner={session.user.id === OWNER_ID} onClose={() => setShowAbout(false)} />}
 
       {showAll && (
         <TxModal txs={listTxs} cats={cats} onDelete={delTx} onUpdate={updateTx} onClose={() => setShowAll(false)} />
