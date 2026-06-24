@@ -3,7 +3,7 @@ import type { Category, Transaction } from '../types'
 
 const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
-export type TxPatch = Partial<Pick<Transaction, 'description' | 'category_id' | 'amount' | 'occurred_on'>>
+export type TxPatch = Partial<Pick<Transaction, 'description' | 'category_id' | 'amount' | 'occurred_on' | 'type'>>
 
 type Field = 'date' | 'desc' | 'cat' | 'val' | null
 
@@ -106,6 +106,15 @@ function TxRow({
         )}
       </span>
 
+      <button
+        type="button"
+        className={'tx-type ' + (tx.type === 'entrada' ? 'is-in' : 'is-out')}
+        title={tx.type === 'entrada' ? 'Entrada — clique p/ virar saída' : 'Saída — clique p/ virar entrada'}
+        onClick={() => onUpdate(tx.id, { type: tx.type === 'entrada' ? 'saida' : 'entrada' })}
+      >
+        {tx.type === 'entrada' ? '+' : '−'}
+      </button>
+
       {edit === 'val' ? (
         <input
           className="tx-edit tx-edit-val"
@@ -122,7 +131,6 @@ function TxRow({
           title="editar valor"
           onClick={() => start('val', Number(tx.amount).toFixed(2).replace('.', ','))}
         >
-          {tx.type === 'entrada' ? '+' : '-'}
           {brl(Number(tx.amount))}
         </span>
       )}

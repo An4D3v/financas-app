@@ -247,7 +247,7 @@ export function Dashboard({ session }: { session: Session }) {
 
   async function updateTx(
     id: string,
-    patch: Partial<Pick<Transaction, 'description' | 'category_id' | 'amount' | 'occurred_on'>>,
+    patch: Partial<Pick<Transaction, 'description' | 'category_id' | 'amount' | 'occurred_on' | 'type'>>,
   ) {
     // atualiza na tela na hora (otimista) e refaz a categoria embutida se ela mudou
     setTxs((prev) =>
