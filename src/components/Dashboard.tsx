@@ -501,6 +501,31 @@ export function Dashboard({ session }: { session: Session }) {
         </div>
       </header>
 
+      {txs.length === 0 && (
+        <section className="card welcome">
+          <h2 className="ttl">&gt;_ bem-vindo(a)! 👋</h2>
+          <p className="small">seu painel tá zerado — bora dar o primeiro passo:</p>
+          <ul className="insights" style={{ marginTop: 10 }}>
+            <li className="insight">
+              <span className="ins-ico">📷</span>
+              <span>
+                <b>escaneie uma nota fiscal</b> — a IA lança automático pra você
+              </span>
+            </li>
+            <li className="insight">
+              <span className="ins-ico">✍️</span>
+              <span>
+                ou <b>adicione manual</b> no "novo lançamento" aqui embaixo
+              </span>
+            </li>
+            <li className="insight">
+              <span className="ins-ico">📊</span>
+              <span>conforme você usa, surgem os KPIs, o gráfico e os insights</span>
+            </li>
+          </ul>
+        </section>
+      )}
+
       <div className="filters">
         <div className="chips">
           {(['dia', 'semana', 'mes', 'tudo'] as const).map((p) => (
@@ -617,6 +642,7 @@ export function Dashboard({ session }: { session: Session }) {
         </section>
       </div>
 
+      {txs.length > 0 && (
       <section className="card">
         <h2 className="ttl">&gt;_ resumo · {periodLabel}</h2>
         {periodTxs.length === 0 ? (
@@ -683,6 +709,7 @@ export function Dashboard({ session }: { session: Session }) {
           </ul>
         )}
       </section>
+      )}
 
       <section className="card">
         <div className="card-head">

@@ -13,13 +13,14 @@ export function Login() {
     e.preventDefault()
     setBusy(true)
     setMsg(null)
-    const { error } =
+    const { data, error } =
       mode === 'in'
         ? await supabase.auth.signInWithPassword({ email, password })
         : await supabase.auth.signUp({ email, password, options: { data: { username: username.trim() } } })
     if (error) setMsg(error.message)
-    else if (mode === 'up')
-      setMsg('Conta criada. Se pedir confirmacao de email, crie o usuario pelo painel (Auto Confirm) e entre.')
+    // se veio sessao, o onAuthStateChange ja loga sozinho; senao, precisa confirmar e-mail
+    else if (mode === 'up' && !data.session)
+      setMsg('Quase lá! 📧 Te enviamos um e-mail de confirmação — confirma e faz o login.')
     setBusy(false)
   }
 
