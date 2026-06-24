@@ -60,6 +60,14 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 .review-row .rev-val { flex: 1; text-align: right; }
 .modal-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; margin-top: 4px; }
 .modal-foot > div { display: flex; gap: 10px; align-items: center; }
+.filters { margin-bottom: 14px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { padding: 6px 13px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--muted); cursor: pointer; font-size: 13px; font-family: inherit; }
+.chip:hover { border-color: var(--cyan); }
+.chip.active { background: var(--cyan); color: #04222a; border-color: var(--cyan); font-weight: 700; }
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.card-head .ttl { margin: 0; }
+.cat-filter { width: auto; max-width: 220px; padding: 7px 10px; font-size: 13px; }
 @media (max-width: 560px) {
   .review-row { flex-wrap: wrap; }
   .review-row .rev-desc { flex: 1 1 60%; }

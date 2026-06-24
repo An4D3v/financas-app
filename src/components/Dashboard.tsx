@@ -7,6 +7,11 @@ import type { Category, Transaction } from '../types'
 
 const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const todayStr = () => new Date().toISOString().slice(0, 10)
+function daysAgoStr(n: number) {
+  const d = new Date()
+  d.setDate(d.getDate() - n)
+  return d.toISOString().slice(0, 10)
+}
 
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -38,6 +43,8 @@ export function Dashboard({ session }: { session: Session }) {
   const [scanMsg, setScanMsg] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const [reviewData, setReviewData] = useState<{ merchant: string; date: string; rows: ReviewRow[] } | null>(null)
+  const [period, setPeriod] = useState<'dia' | 'semana' | 'mes' | 'tudo'>('mes')
+  const [catFilter, setCatFilter] = useState('')
 
   async function load() {
     const [catsRes, txRes] = await Promise.all([
@@ -146,24 +153,33 @@ export function Dashboard({ session }: { session: Session }) {
     await supabase.from('transactions').delete().eq('id', id)
   }
 
+  const periodTxs = useMemo(() => {
+    if (period === 'tudo') return txs
+    const today = todayStr()
+    const weekAgo = daysAgoStr(6)
+    const ym = today.slice(0, 7)
+    return txs.filter((t) => {
+      if (period === 'dia') return t.occurred_on === today
+      if (period === 'semana') return t.occurred_on >= weekAgo && t.occurred_on <= today
+      return t.occurred_on.slice(0, 7) === ym
+    })
+  }, [txs, period])
+
   const { renda, gastos } = useMemo(() => {
-    const ym = todayStr().slice(0, 7)
     let renda = 0
     let gastos = 0
-    for (const t of txs) {
-      if (t.occurred_on.slice(0, 7) !== ym) continue
+    for (const t of periodTxs) {
       if (t.type === 'entrada') renda += Number(t.amount)
       else gastos += Number(t.amount)
     }
     return { renda, gastos }
-  }, [txs])
+  }, [periodTxs])
   const saldo = renda - gastos
 
   const pieData = useMemo(() => {
-    const ym = todayStr().slice(0, 7)
     const m = new Map<string, { name: string; value: number; color: string }>()
-    for (const t of txs) {
-      if (t.type !== 'saida' || t.occurred_on.slice(0, 7) !== ym) continue
+    for (const t of periodTxs) {
+      if (t.type !== 'saida') continue
       const name = t.categories?.name ?? 'Sem categoria'
       const color = t.categories?.color ?? '#8B949E'
       const cur = m.get(name) ?? { name, value: 0, color }
@@ -171,7 +187,14 @@ export function Dashboard({ session }: { session: Session }) {
       m.set(name, cur)
     }
     return [...m.values()].sort((a, b) => b.value - a.value)
-  }, [txs])
+  }, [periodTxs])
+
+  const listTxs = useMemo(
+    () => periodTxs.filter((t) => !catFilter || t.category_id === catFilter),
+    [periodTxs, catFilter],
+  )
+
+  const periodLabel = period === 'dia' ? 'hoje' : period === 'semana' ? '7 dias' : period === 'mes' ? 'mês' : 'tudo'
 
   if (loading) return <div className="center muted">carregando seus dados...</div>
 
@@ -186,17 +209,32 @@ export function Dashboard({ session }: { session: Session }) {
         </button>
       </header>
 
+      <div className="filters">
+        <div className="chips">
+          {(['dia', 'semana', 'mes', 'tudo'] as const).map((p) => (
+            <button
+              key={p}
+              type="button"
+              className={'chip' + (period === p ? ' active' : '')}
+              onClick={() => setPeriod(p)}
+            >
+              {p === 'dia' ? 'Dia' : p === 'semana' ? 'Semana' : p === 'mes' ? 'Mês' : 'Tudo'}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <section className="kpis">
         <div className="kpi">
-          <span className="lbl">// renda do mes</span>
+          <span className="lbl">// renda · {periodLabel}</span>
           <span className="val cyan">{brl(renda)}</span>
         </div>
         <div className="kpi">
-          <span className="lbl">// gastos do mes</span>
+          <span className="lbl">// gastos · {periodLabel}</span>
           <span className="val pink">{brl(gastos)}</span>
         </div>
         <div className="kpi">
-          <span className="lbl">// saldo do mes</span>
+          <span className="lbl">// saldo · {periodLabel}</span>
           <span className={'val ' + (saldo < 0 ? 'red' : 'green')}>{brl(saldo)}</span>
         </div>
       </section>
@@ -243,7 +281,7 @@ export function Dashboard({ session }: { session: Session }) {
         </section>
 
         <section className="card">
-          <h2 className="ttl">&gt;_ gastos por categoria (mes)</h2>
+          <h2 className="ttl">&gt;_ gastos por categoria · {periodLabel}</h2>
           {pieData.length ? (
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
@@ -265,10 +303,20 @@ export function Dashboard({ session }: { session: Session }) {
       </div>
 
       <section className="card">
-        <h2 className="ttl">&gt;_ lancamentos</h2>
-        {txs.length === 0 && <p className="muted small">nada lancado ainda. adiciona o primeiro ali em cima.</p>}
+        <div className="card-head">
+          <h2 className="ttl">&gt;_ lancamentos</h2>
+          <select className="cat-filter" value={catFilter} onChange={(e) => setCatFilter(e.target.value)}>
+            <option value="">todas categorias</option>
+            {cats.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        {listTxs.length === 0 && <p className="muted small">nenhum lancamento nesse filtro.</p>}
         <ul className="txs">
-          {txs.map((t) => (
+          {listTxs.map((t) => (
             <li key={t.id} className="tx">
               <span className="dot" style={{ background: t.categories?.color ?? '#8B949E' }} />
               <span className="tx-date">
