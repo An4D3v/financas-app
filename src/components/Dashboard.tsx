@@ -17,6 +17,11 @@ function fileToBase64(file: File): Promise<string> {
 }
 
 export function Dashboard({ session }: { session: Session }) {
+  const handle =
+    (session.user.user_metadata?.username as string | undefined) ||
+    session.user.email?.split('@')[0] ||
+    'user'
+
   const [cats, setCats] = useState<Category[]>([])
   const [txs, setTxs] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
@@ -139,7 +144,7 @@ export function Dashboard({ session }: { session: Session }) {
     <div className="app">
       <header className="topbar">
         <h1 className="brand">
-          ana@financas<span className="accent">:~$</span> <span className="dim">dashboard</span>
+          {handle}@finanças<span className="accent">:~$</span> <span className="dim">dashboard</span>
         </h1>
         <button className="link" onClick={() => supabase.auth.signOut()}>
           sair ({session.user.email})

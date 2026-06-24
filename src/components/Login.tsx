@@ -5,6 +5,7 @@ export function Login() {
   const [mode, setMode] = useState<'in' | 'up'>('in')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [username, setUsername] = useState('')
   const [msg, setMsg] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -15,7 +16,7 @@ export function Login() {
     const { error } =
       mode === 'in'
         ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password })
+        : await supabase.auth.signUp({ email, password, options: { data: { username: username.trim() } } })
     if (error) setMsg(error.message)
     else if (mode === 'up')
       setMsg('Conta criada. Se pedir confirmacao de email, crie o usuario pelo painel (Auto Confirm) e entre.')
@@ -25,8 +26,17 @@ export function Login() {
   return (
     <div className="center">
       <form className="card auth" onSubmit={submit}>
-        <h1 className="brand">ana@financas<span className="accent">:~$</span></h1>
+        <h1 className="brand">alien@finanças<span className="accent">:~$</span></h1>
         <p className="muted small">{mode === 'in' ? 'entrar na sua conta' : 'criar conta'}</p>
+        {mode === 'up' && (
+          <input
+            placeholder="nome de usuario (ex: alien)"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            maxLength={20}
+          />
+        )}
         <input type="email" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <input
           type="password"
