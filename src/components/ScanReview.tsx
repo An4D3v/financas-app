@@ -1,9 +1,6 @@
 import { useState } from 'react'
-import type { Category } from '../types'
-
-export type ReviewRow = { description: string; value: string; categoryId: string; type: 'entrada' | 'saida' }
-
-const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+import { brl } from '../lib/format'
+import type { Category, ReviewRow } from '../types'
 
 export function ScanReview({
   merchant,
@@ -74,7 +71,7 @@ export function ScanReview({
               </button>
               <input
                 className="rev-desc"
-                placeholder="descricao"
+                placeholder="descrição"
                 value={r.description}
                 onChange={(e) => update(i, { description: e.target.value })}
               />

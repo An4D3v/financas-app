@@ -23,3 +23,9 @@ export type Transaction = {
   categories?: { name: string; color: string | null } | null
   created_at: string
 }
+
+/** uma linha do modal de revisão da nota escaneada */
+export type ReviewRow = { description: string; value: string; categoryId: string; type: 'entrada' | 'saida' }
+
+/** campos editáveis de uma transação (edição inline na lista) */
+export type TxPatch = Partial<Pick<Transaction, 'description' | 'category_id' | 'amount' | 'occurred_on' | 'type'>>

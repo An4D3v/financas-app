@@ -1,6 +1,6 @@
 import { useRef } from 'react'
-import type { Category, Transaction } from '../types'
-import { TxList, type TxPatch } from './TxList'
+import type { Category, Transaction, TxPatch } from '../types'
+import { TxList } from './TxList'
 import { ScrollTopButton } from './ScrollTopButton'
 
 export function TxModal({
@@ -23,7 +23,7 @@ export function TxModal({
       <div className="modal tx-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <h2 className="ttl">
-            &gt;_ todos os lancamentos <span className="muted small">({txs.length})</span>
+            &gt;_ todos os lançamentos <span className="muted small">({txs.length})</span>
           </h2>
           <button className="x" onClick={onClose} title="fechar">
             ×

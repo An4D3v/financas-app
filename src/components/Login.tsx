@@ -31,7 +31,7 @@ export function Login() {
         <p className="muted small">{mode === 'in' ? 'entrar na sua conta' : 'criar conta'}</p>
         {mode === 'up' && (
           <input
-            placeholder="nome de usuario (ex: alien)"
+            placeholder="nome de usuário (ex: alien)"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
@@ -52,7 +52,7 @@ export function Login() {
         </button>
         {msg && <p className="msg">{msg}</p>}
         <button type="button" className="link" onClick={() => { setMode(mode === 'in' ? 'up' : 'in'); setMsg(null) }}>
-          {mode === 'in' ? 'nao tem conta? cadastre-se' : 'ja tem conta? entrar'}
+          {mode === 'in' ? 'não tem conta? cadastre-se' : 'já tem conta? entrar'}
         </button>
       </form>
     </div>

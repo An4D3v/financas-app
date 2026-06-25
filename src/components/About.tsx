@@ -3,7 +3,7 @@ export function About({ isOwner, onClose }: { isOwner: boolean; onClose: () => v
     'react + typescript + vite',
     'supabase  (auth · postgres · rls)',
     'gemini    (leitura das notas)',
-    'recharts  (graficos)',
+    'recharts  (gráficos)',
   ].join('\n')
 
   const feats: [string, string][] = [
@@ -34,7 +34,7 @@ export function About({ isOwner, onClose }: { isOwner: boolean; onClose: () => v
               <p className="muted small">seu dashboard de grana — 100% gratuito, feito por você 💚</p>
               <pre className="about-stack">{stack}</pre>
               <p className="muted small">
-                seus dados sao so seus: cada conta enxerga apenas as proprias linhas (row level security).
+                seus dados são só seus: cada conta enxerga apenas as próprias linhas (row level security).
               </p>
             </>
           ) : (
@@ -49,7 +49,7 @@ export function About({ isOwner, onClose }: { isOwner: boolean; onClose: () => v
                 ))}
               </ul>
               <p className="muted small">
-                seus dados sao protegidos: cada conta enxerga apenas os proprios dados (row level security).
+                seus dados são protegidos: cada conta enxerga apenas os próprios dados (row level security).
               </p>
               <p className="small">
                 desenvolvido por <b className="green">ana</b> 💚

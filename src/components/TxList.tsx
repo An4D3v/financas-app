@@ -1,9 +1,6 @@
 import { useState, type KeyboardEvent } from 'react'
-import type { Category, Transaction } from '../types'
-
-const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-
-export type TxPatch = Partial<Pick<Transaction, 'description' | 'category_id' | 'amount' | 'occurred_on' | 'type'>>
+import { brl } from '../lib/format'
+import type { Category, Transaction, TxPatch } from '../types'
 
 type Field = 'date' | 'desc' | 'cat' | 'val' | null
 
@@ -71,7 +68,7 @@ function TxRow({
             className="tx-edit tx-edit-desc"
             autoFocus
             value={draft}
-            placeholder="descricao"
+            placeholder="descrição"
             onChange={(e) => setDraft(e.target.value)}
             onBlur={commit}
             onKeyDown={onKey}

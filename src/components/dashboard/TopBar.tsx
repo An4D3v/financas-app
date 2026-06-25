@@ -1,0 +1,76 @@
+import { useRef, useState } from 'react'
+import type { Profile } from '../../types'
+import { useDismissable } from '../../hooks/useDismissable'
+
+type Props = {
+  handle: string
+  profile: Profile | null
+  onSettings: () => void
+  onAccount: () => void
+  onExport: () => void
+  onAbout: () => void
+  onSignOut: () => void
+}
+
+/** cabeçalho: marca, bio do perfil e o menu (≡) com as ações do app */
+export function TopBar({ handle, profile, onSettings, onAccount, onExport, onAbout, onSignOut }: Props) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  useDismissable(open, ref, () => setOpen(false))
+
+  const pick = (fn: () => void) => () => {
+    setOpen(false)
+    fn()
+  }
+
+  return (
+    <header className="topbar">
+      <div className="brand-wrap">
+        <h1 className="brand">
+          {handle}@finanças<span className="accent">:~$</span> <span className="dim">dashboard</span>
+        </h1>
+        {(profile?.profession || (profile?.hobbies?.length ?? 0) > 0) && (
+          <p className="bio">
+            {profile?.profession && <span className="bio-prof">// {profile.profession}</span>}
+            {profile?.hobbies?.map((h) => (
+              <span key={h} className="bio-tag">
+                #{h}
+              </span>
+            ))}
+          </p>
+        )}
+      </div>
+      <div className="menu-wrap" ref={ref}>
+        <button
+          className="icon-btn menu-btn"
+          title="menu"
+          aria-label="menu"
+          aria-haspopup="true"
+          aria-expanded={open}
+          onClick={() => setOpen((o) => !o)}
+        >
+          ≡
+        </button>
+        {open && (
+          <div className="menu" role="menu">
+            <button className="menu-item" role="menuitem" onClick={pick(onSettings)}>
+              <span className="menu-ico">⚙️</span> configurações
+            </button>
+            <button className="menu-item" role="menuitem" onClick={pick(onAccount)}>
+              <span className="menu-ico">👤</span> minha conta
+            </button>
+            <button className="menu-item" role="menuitem" onClick={pick(onExport)}>
+              <span className="menu-ico">⬇️</span> exportar dados
+            </button>
+            <button className="menu-item" role="menuitem" onClick={pick(onAbout)}>
+              <span className="menu-ico">ℹ️</span> sobre
+            </button>
+            <button className="menu-item danger" role="menuitem" onClick={pick(onSignOut)}>
+              <span className="menu-ico">🚪</span> sair
+            </button>
+          </div>
+        )}
+      </div>
+    </header>
+  )
+}

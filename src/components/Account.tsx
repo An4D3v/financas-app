@@ -22,7 +22,7 @@ export function Account({
 
   async function changePw() {
     if (pw.length < 6) {
-      setMsg('A senha precisa ter no minimo 6 caracteres.')
+      setMsg('a senha precisa ter no mínimo 6 caracteres.')
       return
     }
     setBusy(true)
@@ -49,7 +49,7 @@ export function Account({
 
         <div className="kv">
           <div className="kv-row">
-            <span className="kv-k">usuario</span>
+            <span className="kv-k">usuário</span>
             <span className="kv-v">{handle}</span>
           </div>
           <div className="kv-row">
@@ -61,7 +61,7 @@ export function Account({
             <span className="kv-v">{created}</span>
           </div>
           <div className="kv-row">
-            <span className="kv-k">lancamentos</span>
+            <span className="kv-k">lançamentos</span>
             <span className="kv-v">{txCount}</span>
           </div>
         </div>
@@ -84,7 +84,7 @@ export function Account({
         </div>
 
         <div className="modal-foot">
-          <span className="muted small">protegido por rls — so você acessa</span>
+          <span className="muted small">protegido por rls — só você acessa</span>
           <div>
             <button type="button" className="link" onClick={onClose}>
               fechar

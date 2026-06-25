@@ -56,7 +56,7 @@ export function Settings({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <h2 className="ttl">&gt;_ configuracoes</h2>
+          <h2 className="ttl">&gt;_ configurações</h2>
           <button className="x" onClick={onClose} title="fechar">
             ×
           </button>
@@ -64,7 +64,7 @@ export function Settings({
         <p className="muted small">logado como {email}</p>
 
         <div className="set-section">
-          <span className="set-label">// aparencia</span>
+          <span className="set-label">// aparência</span>
           <div className="chips">
             {THEMES.map((t) => (
               <button
@@ -80,7 +80,7 @@ export function Settings({
         </div>
 
         <div className="set-section">
-          <span className="set-label">// profissao</span>
+          <span className="set-label">// profissão</span>
           <input
             placeholder="ex: desenvolvedora .net"
             value={profession}
@@ -106,7 +106,7 @@ export function Settings({
             </div>
           )}
           <input
-            placeholder={full ? 'limite de 10 atingido' : 'digite e tecle enter (ex: violao)'}
+            placeholder={full ? 'limite de 10 atingido' : 'digite e tecle enter (ex: violão)'}
             value={draft}
             disabled={full}
             maxLength={24}
