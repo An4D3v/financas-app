@@ -63,7 +63,10 @@ body {
 .pink { color: var(--pink); }
 .green { color: var(--green); }
 .red { color: var(--red); }
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+/* card do gráfico acompanha a altura do card de "novo lançamento" e rola por dentro */
+.chart-card { display: flex; flex-direction: column; }
+.chart-body { flex: 1; min-height: 240px; overflow-y: auto; }
 .form { display: flex; flex-direction: column; gap: 10px; }
 .row { display: flex; gap: 10px; }
 .row > * { flex: 1; min-width: 0; }
@@ -206,6 +209,7 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
   .kpis { grid-template-columns: 1fr; }
   .grid2 { grid-template-columns: 1fr; }
   .brand { font-size: 17px; }
+  .chart-card { height: 360px; }
 }
 
 /* topbar: marca + bio geek + acoes (engrenagem / sair) */

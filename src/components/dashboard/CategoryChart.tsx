@@ -29,7 +29,7 @@ export function CategoryChart({ data, periodLabel }: Props) {
   const pctOf = (v: number) => (total ? Math.round((v / total) * 100) : 0)
 
   return (
-    <section className="card">
+    <section className="card chart-card">
       <div className="card-head">
         <h2 className="ttl">&gt;_ gastos por categoria · {periodLabel}</h2>
         <div className="chips chart-chips">
@@ -41,10 +41,11 @@ export function CategoryChart({ data, periodLabel }: Props) {
         </div>
       </div>
 
-      {!data.length ? (
+      <div className="chart-body">
+        {!data.length ? (
         <p className="muted small">sem gastos nesse período ainda</p>
       ) : type === 'pizza' ? (
-        <ResponsiveContainer width="100%" height={220}>
+        <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie data={data} dataKey="value" nameKey="name" innerRadius={45} outerRadius={85} paddingAngle={2}>
               {data.map((d, i) => (
@@ -99,6 +100,7 @@ export function CategoryChart({ data, periodLabel }: Props) {
           ))}
         </ul>
       )}
+      </div>
     </section>
   )
 }
