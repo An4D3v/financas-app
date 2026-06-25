@@ -45,7 +45,14 @@ body {
 .accent { color: var(--green); }
 .brand { font-family: ui-monospace, Consolas, monospace; font-size: 20px; margin: 0; color: var(--green); font-weight: 700; }
 .app { max-width: 920px; margin: 0 auto; padding: 18px; }
-.topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; flex-wrap: nowrap; }
+.topbar {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: nowrap;
+  position: sticky; top: 0; z-index: 20;
+  background: var(--bg);
+  padding: 8px 0 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
 .ttl { font-family: ui-monospace, Consolas, monospace; font-size: 14px; color: var(--cyan); margin: 0 0 12px; }
 .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }

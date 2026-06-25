@@ -16,9 +16,15 @@ export function getStoredTheme(): ThemePref {
   return v === 'light' || v === 'dark' || v === 'system' ? v : 'system'
 }
 
-export function applyTheme(pref: ThemePref) {
+// só muda a aparência na tela (sem gravar) — usado p/ preview no painel de configs
+export function previewTheme(pref: ThemePref) {
   currentPref = pref
   document.documentElement.dataset.theme = resolved(pref)
+}
+
+// muda a aparência E grava a preferência (no boot e ao salvar)
+export function applyTheme(pref: ThemePref) {
+  previewTheme(pref)
   try {
     localStorage.setItem(KEY, pref)
   } catch {

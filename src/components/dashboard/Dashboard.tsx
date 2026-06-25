@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../../lib/supabase'
-import { applyTheme, getStoredTheme, type ThemePref } from '../../lib/theme'
+import { applyTheme, previewTheme, getStoredTheme, type ThemePref } from '../../lib/theme'
 import { todayStr, toHandle } from '../../lib/format'
 import { OWNER_ID } from '../../lib/constants'
 import { filterByPeriod, computeTotals, computePie, computeInsights, periodLabel, type Period } from '../../lib/finance'
@@ -163,7 +163,11 @@ export function Dashboard({ session }: { session: Session }) {
           profession={profile?.profession ?? ''}
           hobbies={profile?.hobbies ?? []}
           theme={theme}
-          onClose={() => setShowSettings(false)}
+          onPreview={previewTheme}
+          onClose={() => {
+            previewTheme(theme) // descarta o preview, volta ao tema salvo
+            setShowSettings(false)
+          }}
           onSave={async (data) => {
             if (await saveProfile(data)) {
               setTheme(data.theme)

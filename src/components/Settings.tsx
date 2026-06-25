@@ -2,7 +2,7 @@ import { useState, type KeyboardEvent } from 'react'
 import type { ThemePref } from '../lib/theme'
 import { Icon, type IconName } from './Icon'
 
-const MAX_HOBBIES = 10
+const MAX_HOBBIES = 4
 
 const THEMES: { id: ThemePref; label: string; icon: IconName }[] = [
   { id: 'system', label: 'sistema', icon: 'monitor' },
@@ -15,6 +15,7 @@ export function Settings({
   profession: initProfession,
   hobbies: initHobbies,
   theme,
+  onPreview,
   onClose,
   onSave,
 }: {
@@ -22,6 +23,7 @@ export function Settings({
   profession: string
   hobbies: string[]
   theme: ThemePref
+  onPreview: (t: ThemePref) => void
   onClose: () => void
   onSave: (data: { profession: string; hobbies: string[]; theme: ThemePref }) => Promise<void>
 }) {
@@ -71,7 +73,10 @@ export function Settings({
                 key={t.id}
                 type="button"
                 className={'chip' + (themeDraft === t.id ? ' active' : '')}
-                onClick={() => setThemeDraft(t.id)}
+                onClick={() => {
+                  setThemeDraft(t.id)
+                  onPreview(t.id)
+                }}
               >
                 <Icon name={t.icon} /> {t.label}
               </button>
@@ -106,7 +111,7 @@ export function Settings({
             </div>
           )}
           <input
-            placeholder={full ? 'limite de 10 atingido' : 'digite e tecle enter (ex: violão)'}
+            placeholder={full ? `limite de ${MAX_HOBBIES} atingido` : 'digite e tecle enter (ex: violão)'}
             value={draft}
             disabled={full}
             maxLength={24}
@@ -116,7 +121,7 @@ export function Settings({
         </div>
 
         <div className="modal-foot">
-          <span className="muted small">nada muda até você clicar em salvar</span>
+          <span className="muted small">preview na hora; sem salvar, volta ao anterior</span>
           <div>
             <button type="button" className="link" onClick={onClose}>
               cancelar
