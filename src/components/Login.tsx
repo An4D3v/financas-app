@@ -35,7 +35,7 @@ export function Login() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
-            maxLength={20}
+            maxLength={14}
           />
         )}
         <input type="email" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} required />

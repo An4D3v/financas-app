@@ -96,7 +96,7 @@ export function Account({
             <input
               placeholder="novo nome de usuário"
               value={uname}
-              maxLength={20}
+              maxLength={14}
               onChange={(e) => setUname(e.target.value)}
             />
             <button

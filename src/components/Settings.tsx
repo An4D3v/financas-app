@@ -89,7 +89,7 @@ export function Settings({
           <input
             placeholder="ex: desenvolvedora .net"
             value={profession}
-            maxLength={60}
+            maxLength={40}
             onChange={(e) => setProfession(e.target.value)}
           />
         </div>
@@ -114,7 +114,7 @@ export function Settings({
             placeholder={full ? `limite de ${MAX_HOBBIES} atingido` : 'digite e tecle enter (ex: violão)'}
             value={draft}
             disabled={full}
-            maxLength={24}
+            maxLength={16}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={onKey}
           />

@@ -40,5 +40,5 @@ export function toHandle(raw: string | null | undefined): string {
     .trim()
     .split(/[\s\-_.@]+/)
     .filter(Boolean)[0]
-  return first || 'user'
+  return (first || 'user').slice(0, 14)
 }
