@@ -41,11 +41,11 @@ export function CategoryChart({ data, periodLabel }: Props) {
         </div>
       </div>
 
-      <div className="chart-body">
+      <div className={'chart-body' + (type === 'pizza' ? ' centered' : '')}>
         {!data.length ? (
         <p className="muted small">sem gastos nesse período ainda</p>
       ) : type === 'pizza' ? (
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={240}>
           <PieChart>
             <Pie data={data} dataKey="value" nameKey="name" innerRadius={45} outerRadius={85} paddingAngle={2}>
               {data.map((d, i) => (
