@@ -14,7 +14,6 @@ export function Settings({
   profession: initProfession,
   hobbies: initHobbies,
   theme,
-  onTheme,
   onClose,
   onSave,
 }: {
@@ -22,12 +21,12 @@ export function Settings({
   profession: string
   hobbies: string[]
   theme: ThemePref
-  onTheme: (t: ThemePref) => void
   onClose: () => void
   onSave: (data: { profession: string; hobbies: string[]; theme: ThemePref }) => Promise<void>
 }) {
   const [profession, setProfession] = useState(initProfession)
   const [hobbies, setHobbies] = useState<string[]>(initHobbies)
+  const [themeDraft, setThemeDraft] = useState(theme)
   const [draft, setDraft] = useState('')
   const [saving, setSaving] = useState(false)
   const full = hobbies.length >= MAX_HOBBIES
@@ -48,7 +47,7 @@ export function Settings({
   }
   async function save() {
     setSaving(true)
-    await onSave({ profession: profession.trim(), hobbies, theme })
+    await onSave({ profession: profession.trim(), hobbies, theme: themeDraft })
     setSaving(false)
   }
 
@@ -70,8 +69,8 @@ export function Settings({
               <button
                 key={t.id}
                 type="button"
-                className={'chip' + (theme === t.id ? ' active' : '')}
-                onClick={() => onTheme(t.id)}
+                className={'chip' + (themeDraft === t.id ? ' active' : '')}
+                onClick={() => setThemeDraft(t.id)}
               >
                 {t.icon} {t.label}
               </button>
@@ -116,7 +115,7 @@ export function Settings({
         </div>
 
         <div className="modal-foot">
-          <span className="muted small">tema aplica na hora · perfil salva ao confirmar</span>
+          <span className="muted small">nada muda até você clicar em salvar</span>
           <div>
             <button type="button" className="link" onClick={onClose}>
               cancelar

@@ -40,10 +40,6 @@ export function Dashboard({ session }: { session: Session }) {
   useEffect(() => {
     if (profile?.theme) setTheme(profile.theme)
   }, [profile?.theme])
-  function onThemeChange(t: ThemePref) {
-    setTheme(t)
-    applyTheme(t)
-  }
 
   // modais
   const [reviewData, setReviewData] = useState<ScanResult | null>(null)
@@ -167,10 +163,13 @@ export function Dashboard({ session }: { session: Session }) {
           profession={profile?.profession ?? ''}
           hobbies={profile?.hobbies ?? []}
           theme={theme}
-          onTheme={onThemeChange}
           onClose={() => setShowSettings(false)}
           onSave={async (data) => {
-            if (await saveProfile(data)) setShowSettings(false)
+            if (await saveProfile(data)) {
+              setTheme(data.theme)
+              applyTheme(data.theme)
+              setShowSettings(false)
+            }
           }}
         />
       )}
