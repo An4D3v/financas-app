@@ -1,12 +1,13 @@
 import { useState, type KeyboardEvent } from 'react'
 import type { ThemePref } from '../lib/theme'
+import { Icon, type IconName } from './Icon'
 
 const MAX_HOBBIES = 10
 
-const THEMES: { id: ThemePref; label: string; icon: string }[] = [
-  { id: 'system', label: 'sistema', icon: '🖥️' },
-  { id: 'light', label: 'claro', icon: '☀️' },
-  { id: 'dark', label: 'escuro', icon: '🌙' },
+const THEMES: { id: ThemePref; label: string; icon: IconName }[] = [
+  { id: 'system', label: 'sistema', icon: 'monitor' },
+  { id: 'light', label: 'claro', icon: 'sun' },
+  { id: 'dark', label: 'escuro', icon: 'moon' },
 ]
 
 export function Settings({
@@ -72,7 +73,7 @@ export function Settings({
                 className={'chip' + (themeDraft === t.id ? ' active' : '')}
                 onClick={() => setThemeDraft(t.id)}
               >
-                {t.icon} {t.label}
+                <Icon name={t.icon} /> {t.label}
               </button>
             ))}
           </div>

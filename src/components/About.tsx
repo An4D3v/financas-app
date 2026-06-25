@@ -1,3 +1,5 @@
+import { Icon, type IconName } from './Icon'
+
 export function About({ isOwner, onClose }: { isOwner: boolean; onClose: () => void }) {
   const stack = [
     'react + typescript + vite',
@@ -6,12 +8,12 @@ export function About({ isOwner, onClose }: { isOwner: boolean; onClose: () => v
     'recharts  (gráficos)',
   ].join('\n')
 
-  const feats: [string, string][] = [
-    ['📷', 'escaneie a nota fiscal e lance no automático (ia)'],
-    ['🏷️', 'categorias, filtros por período e calendário'],
-    ['📊', 'resumo com insights dos seus gastos'],
-    ['🌗', 'tema claro / escuro'],
-    ['⬇️', 'exporte tudo em csv quando quiser'],
+  const feats: [IconName, string][] = [
+    ['camera', 'escaneie a nota fiscal e lance no automático (ia)'],
+    ['tag', 'categorias, filtros por período e calendário'],
+    ['chart', 'resumo com insights dos seus gastos'],
+    ['moon', 'tema claro / escuro'],
+    ['download', 'exporte tudo em csv quando quiser'],
   ]
 
   return (
@@ -31,7 +33,9 @@ export function About({ isOwner, onClose }: { isOwner: boolean; onClose: () => v
 
           {isOwner ? (
             <>
-              <p className="muted small">seu dashboard de grana — 100% gratuito, feito por você 💚</p>
+              <p className="muted small">
+                seu dashboard de grana — 100% gratuito, feito por você <Icon name="heart" className="green" />
+              </p>
               <pre className="about-stack">{stack}</pre>
               <p className="muted small">
                 seus dados são só seus: cada conta enxerga apenas as próprias linhas (row level security).
@@ -43,7 +47,7 @@ export function About({ isOwner, onClose }: { isOwner: boolean; onClose: () => v
               <ul className="insights">
                 {feats.map(([ico, txt]) => (
                   <li key={txt} className="insight">
-                    <span className="ins-ico">{ico}</span>
+                    <Icon name={ico} className="ins-ico" />
                     <span>{txt}</span>
                   </li>
                 ))}
@@ -52,14 +56,14 @@ export function About({ isOwner, onClose }: { isOwner: boolean; onClose: () => v
                 seus dados são protegidos: cada conta enxerga apenas os próprios dados (row level security).
               </p>
               <p className="small">
-                desenvolvido por <b className="green">ana</b> 💚
+                desenvolvido por <b className="green">ana</b> <Icon name="heart" className="green" />
               </p>
             </>
           )}
         </div>
 
         <div className="modal-foot">
-          <span className="muted small">feito com ☕ + código</span>
+          <span className="muted small">feito com <Icon name="coffee" /> + código</span>
           <div>
             <button type="button" className="link" onClick={onClose}>
               fechar

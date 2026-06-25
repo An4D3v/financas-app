@@ -20,7 +20,7 @@ export function Login() {
     if (error) setMsg(error.message)
     // se veio sessao, o onAuthStateChange ja loga sozinho; senao, precisa confirmar e-mail
     else if (mode === 'up' && !data.session)
-      setMsg('quase lá! 📧 te enviamos um e-mail de confirmação — confirma e faz o login.')
+      setMsg('quase lá! te enviamos um e-mail de confirmação — confirma e faz o login.')
     setBusy(false)
   }
 

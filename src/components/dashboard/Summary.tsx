@@ -1,5 +1,6 @@
 import { brl } from '../../lib/format'
 import type { Insights, Period } from '../../lib/finance'
+import { Icon } from '../Icon'
 
 type Props = {
   insights: Insights
@@ -21,7 +22,7 @@ export function Summary({ insights, saldo, gastos, period, periodLabel, hasPerio
         <ul className="insights">
           {insights.savingRate != null && (
             <li className="insight">
-              <span className="ins-ico">{saldo >= 0 ? '💰' : '⚠️'}</span>
+              <Icon name={saldo >= 0 ? 'wallet' : 'alert'} className={'ins-ico ' + (saldo >= 0 ? 'green' : 'red')} />
               {saldo >= 0 ? (
                 <span>
                   você guardou <b className="green">{insights.savingRate.toFixed(0)}%</b> da sua renda nesse período
@@ -35,7 +36,7 @@ export function Summary({ insights, saldo, gastos, period, periodLabel, hasPerio
           )}
           {insights.top && (
             <li className="insight">
-              <span className="ins-ico">📊</span>
+              <Icon name="chart" className="ins-ico" />
               <span>
                 <b style={{ color: insights.top.color }}>{insights.top.name}</b> é seu maior gasto:{' '}
                 <b className="pink">{brl(insights.top.value)}</b>{' '}
@@ -45,7 +46,7 @@ export function Summary({ insights, saldo, gastos, period, periodLabel, hasPerio
           )}
           {gastos > 0 && period !== 'dia' && (
             <li className="insight">
-              <span className="ins-ico">📅</span>
+              <Icon name="calendar" className="ins-ico" />
               <span>
                 média de <b className="cyan">{brl(insights.dailyAvg)}</b> por dia em gastos
               </span>
@@ -53,7 +54,10 @@ export function Summary({ insights, saldo, gastos, period, periodLabel, hasPerio
           )}
           {insights.pct != null && (
             <li className="insight">
-              <span className="ins-ico">{insights.pct > 0 ? '📈' : insights.pct < 0 ? '📉' : '➖'}</span>
+              <Icon
+                name={insights.pct > 0 ? 'trendingUp' : insights.pct < 0 ? 'trendingDown' : 'minus'}
+                className={'ins-ico ' + (insights.pct > 0 ? 'red' : insights.pct < 0 ? 'green' : 'muted')}
+              />
               {insights.pct > 0 ? (
                 <span>
                   você gastou <b className="red">{insights.pct.toFixed(0)}% a mais</b> que {insights.prevLabel}
@@ -69,7 +73,7 @@ export function Summary({ insights, saldo, gastos, period, periodLabel, hasPerio
           )}
           {insights.biggest && (
             <li className="insight">
-              <span className="ins-ico">🔝</span>
+              <Icon name="arrowUp" className="ins-ico" />
               <span>
                 maior saída: <b>{insights.biggest.description}</b> ·{' '}
                 <b className="pink">{brl(Number(insights.biggest.amount))}</b>

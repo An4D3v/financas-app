@@ -30,6 +30,7 @@
 :root[data-theme="light"] .cal-cell.sel { color: #fff; }
 html { transition: background 0.15s ease; }
 * { box-sizing: border-box; }
+.icon { width: 1em; height: 1em; flex: none; vertical-align: -0.14em; }
 html, body, #root { height: 100%; }
 body {
   margin: 0;

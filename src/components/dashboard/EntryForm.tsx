@@ -3,6 +3,7 @@ import type { Category } from '../../types'
 import type { NewTx } from '../../hooks/useFinanceData'
 import { scanReceipt, type ScanResult } from '../../lib/scan'
 import { todayStr } from '../../lib/format'
+import { Icon } from '../Icon'
 
 type Props = {
   cats: Category[]
@@ -70,7 +71,7 @@ export function EntryForm({ cats, onAdd, onScanned }: Props) {
         onChange={onPickPhoto}
       />
       <button type="button" className="btn scan" onClick={() => fileRef.current?.click()} disabled={scanning}>
-        {scanning ? 'lendo a nota...' : '📷 escanear nota'}
+        {scanning ? 'lendo a nota...' : (<><Icon name="camera" /> escanear nota</>)}
       </button>
       {scanMsg && <p className="msg">{scanMsg}</p>}
       <form className="form" onSubmit={submit}>

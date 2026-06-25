@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import type { Profile } from '../../types'
 import { useDismissable } from '../../hooks/useDismissable'
+import { Icon } from '../Icon'
 
 type Props = {
   handle: string
@@ -54,19 +55,19 @@ export function TopBar({ handle, profile, onSettings, onAccount, onExport, onAbo
         {open && (
           <div className="menu" role="menu">
             <button className="menu-item" role="menuitem" onClick={pick(onSettings)}>
-              <span className="menu-ico">⚙️</span> configurações
+              <Icon name="settings" className="menu-ico" /> configurações
             </button>
             <button className="menu-item" role="menuitem" onClick={pick(onAccount)}>
-              <span className="menu-ico">👤</span> minha conta
+              <Icon name="user" className="menu-ico" /> minha conta
             </button>
             <button className="menu-item" role="menuitem" onClick={pick(onExport)}>
-              <span className="menu-ico">⬇️</span> exportar dados
+              <Icon name="download" className="menu-ico" /> exportar dados
             </button>
             <button className="menu-item" role="menuitem" onClick={pick(onAbout)}>
-              <span className="menu-ico">ℹ️</span> sobre
+              <Icon name="info" className="menu-ico" /> sobre
             </button>
             <button className="menu-item danger" role="menuitem" onClick={pick(onSignOut)}>
-              <span className="menu-ico">🚪</span> sair
+              <Icon name="logout" className="menu-ico" /> sair
             </button>
           </div>
         )}

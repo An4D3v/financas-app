@@ -3,6 +3,7 @@ import { RangeCalendar } from '../RangeCalendar'
 import { useDismissable } from '../../hooks/useDismissable'
 import { brDate, todayStr } from '../../lib/format'
 import type { Period } from '../../lib/finance'
+import { Icon } from '../Icon'
 
 type Props = {
   period: Period
@@ -47,7 +48,7 @@ export function PeriodFilter({ period, onPeriod, customFrom, customTo, onApplyRa
             className={'chip' + (period === 'custom' ? ' active' : '')}
             onClick={() => setCalOpen((o) => !o)}
           >
-            📅 {rangeLabel}
+            <Icon name="calendar" /> {rangeLabel}
           </button>
           {calOpen && (
             <RangeCalendar

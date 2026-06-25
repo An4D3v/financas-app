@@ -41,7 +41,7 @@ export function Account({
       setUmsg('erro: ' + error.message)
       return
     }
-    setUmsg('usuário atualizado! ✨')
+    setUmsg('usuário atualizado!')
   }
 
   async function changePw() {
@@ -57,7 +57,7 @@ export function Account({
       setMsg('erro: ' + error.message)
       return
     }
-    setMsg('senha atualizada! 🔒')
+    setMsg('senha atualizada!')
     setPw('')
   }
 
