@@ -69,8 +69,11 @@ export function CategoryChart({ data, periodLabel }: Props) {
               tickFormatter={(n: string) => (n.length > 12 ? n.slice(0, 11) + '…' : n)}
             />
             <Tooltip
-              formatter={(value) => brl(Number(value))}
+              formatter={(value) => [brl(Number(value)), '']}
+              separator=""
               contentStyle={tooltipStyle}
+              itemStyle={{ color: 'var(--txt)' }}
+              labelStyle={{ color: 'var(--txt)' }}
               cursor={{ fill: 'var(--line)', fillOpacity: 0.25 }}
             />
             <Bar dataKey="value" radius={[0, 5, 5, 0]}>
