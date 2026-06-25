@@ -1,24 +1,48 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { toHandle } from '../lib/format'
 
 export function Account({
   email,
   handle,
+  username,
   createdAt,
   txCount,
   onClose,
 }: {
   email: string
   handle: string
+  username: string
   createdAt: string
   txCount: number
   onClose: () => void
 }) {
+  const [uname, setUname] = useState(username)
+  const [ubusy, setUbusy] = useState(false)
+  const [umsg, setUmsg] = useState<string | null>(null)
+
   const [pw, setPw] = useState('')
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
 
   const created = createdAt ? new Date(createdAt).toLocaleDateString('pt-BR') : '—'
+
+  async function changeUsername() {
+    const v = uname.trim()
+    if (!v) {
+      setUmsg('digite um nome de usuário.')
+      return
+    }
+    setUbusy(true)
+    setUmsg(null)
+    const { error } = await supabase.auth.updateUser({ data: { username: v } })
+    setUbusy(false)
+    if (error) {
+      setUmsg('erro: ' + error.message)
+      return
+    }
+    setUmsg('usuário atualizado! ✨')
+  }
 
   async function changePw() {
     if (pw.length < 6) {
@@ -64,6 +88,30 @@ export function Account({
             <span className="kv-k">lançamentos</span>
             <span className="kv-v">{txCount}</span>
           </div>
+        </div>
+
+        <div className="set-section">
+          <span className="set-label">// trocar usuário</span>
+          <div className="row">
+            <input
+              placeholder="novo nome de usuário"
+              value={uname}
+              maxLength={20}
+              onChange={(e) => setUname(e.target.value)}
+            />
+            <button
+              className="btn primary"
+              style={{ flex: 'none' }}
+              disabled={ubusy || !uname.trim()}
+              onClick={changeUsername}
+            >
+              {ubusy ? '...' : 'atualizar'}
+            </button>
+          </div>
+          <p className="muted small">
+            aparece como <b className="green">{toHandle(uname)}</b>@finanças:~$
+          </p>
+          {umsg && <p className="msg">{umsg}</p>}
         </div>
 
         <div className="set-section">

@@ -32,3 +32,13 @@ export function fileToBase64(file: File): Promise<string> {
     reader.readAsDataURL(file)
   })
 }
+
+/** normaliza o nome de usuário p/ o dash: minúsculo + só a primeira palavra ("Little-Jeff" -> "little") */
+export function toHandle(raw: string | null | undefined): string {
+  const first = (raw ?? '')
+    .toLowerCase()
+    .trim()
+    .split(/[\s\-_.@]+/)
+    .filter(Boolean)[0]
+  return first || 'user'
+}

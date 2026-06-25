@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../../lib/supabase'
 import { applyTheme, getStoredTheme, type ThemePref } from '../../lib/theme'
-import { todayStr } from '../../lib/format'
+import { todayStr, toHandle } from '../../lib/format'
 import { OWNER_ID } from '../../lib/constants'
 import { filterByPeriod, computeTotals, computePie, computeInsights, periodLabel, type Period } from '../../lib/finance'
 import { useFinanceData } from '../../hooks/useFinanceData'
@@ -23,8 +23,9 @@ import { TxModal } from '../TxModal'
 import { ScrollTopButton } from '../ScrollTopButton'
 
 export function Dashboard({ session }: { session: Session }) {
-  const handle =
-    (session.user.user_metadata?.username as string | undefined) || session.user.email?.split('@')[0] || 'user'
+  const username =
+    (session.user.user_metadata?.username as string | undefined) ?? session.user.email?.split('@')[0] ?? ''
+  const handle = toHandle(username)
 
   const { cats, txs, profile, loading, addTx, insertScanned, delTx, updateTx, saveProfile } = useFinanceData(session)
 
@@ -178,6 +179,7 @@ export function Dashboard({ session }: { session: Session }) {
         <Account
           email={session.user.email ?? ''}
           handle={handle}
+          username={username}
           createdAt={session.user.created_at ?? ''}
           txCount={txs.length}
           onClose={() => setShowAccount(false)}
