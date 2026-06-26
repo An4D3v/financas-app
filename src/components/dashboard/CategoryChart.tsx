@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line } from 'recharts'
 import { brl } from '../../lib/format'
 import type { PieSlice } from '../../lib/finance'
 
 type Props = { data: PieSlice[]; periodLabel: string }
-type ChartType = 'pizza' | 'barras' | 'lista'
+type ChartType = 'pizza' | 'barras' | 'colunas' | 'linhas' | 'lista'
 
 const STORE_KEY = 'fin-chart'
 const tooltipStyle = { background: 'var(--panel)', border: '1px solid var(--line)', borderRadius: 8, color: 'var(--txt)' }
@@ -13,7 +13,7 @@ const tooltipStyle = { background: 'var(--panel)', border: '1px solid var(--line
 export function CategoryChart({ data, periodLabel }: Props) {
   const [type, setType] = useState<ChartType>(() => {
     const v = localStorage.getItem(STORE_KEY)
-    return v === 'barras' || v === 'lista' ? v : 'pizza'
+    return v && ['barras', 'colunas', 'linhas', 'lista'].includes(v) ? (v as ChartType) : 'pizza'
   })
   function pick(t: ChartType) {
     setType(t)
@@ -33,7 +33,7 @@ export function CategoryChart({ data, periodLabel }: Props) {
       <div className="card-head">
         <h2 className="ttl">&gt;_ gastos por categoria · {periodLabel}</h2>
         <div className="chips chart-chips">
-          {(['pizza', 'barras', 'lista'] as const).map((t) => (
+          {(['pizza', 'barras', 'colunas', 'linhas', 'lista'] as const).map((t) => (
             <button key={t} type="button" className={'chip' + (type === t ? ' active' : '')} onClick={() => pick(t)}>
               {t}
             </button>
@@ -41,7 +41,7 @@ export function CategoryChart({ data, periodLabel }: Props) {
         </div>
       </div>
 
-      <div className={'chart-body' + (type === 'pizza' ? ' centered' : '')}>
+      <div className={'chart-body' + (type === 'pizza' || type === 'colunas' || type === 'linhas' ? ' centered' : '')}>
         {!data.length ? (
         <p className="muted small">sem gastos nesse período ainda</p>
       ) : type === 'pizza' ? (
@@ -82,6 +82,61 @@ export function CategoryChart({ data, periodLabel }: Props) {
               ))}
             </Bar>
           </BarChart>
+        </ResponsiveContainer>
+      ) : type === 'colunas' ? (
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
+            <XAxis
+              dataKey="name"
+              interval={0}
+              tickLine={false}
+              axisLine={false}
+              angle={-35}
+              textAnchor="end"
+              height={64}
+              tick={{ fontSize: 10, fill: 'var(--muted)' }}
+              tickFormatter={(n: string) => (n.length > 9 ? n.slice(0, 8) + '…' : n)}
+            />
+            <YAxis hide />
+            <Tooltip
+              formatter={(value) => [brl(Number(value)), '']}
+              separator=""
+              contentStyle={tooltipStyle}
+              itemStyle={{ color: 'var(--txt)' }}
+              labelStyle={{ color: 'var(--txt)' }}
+              cursor={{ fill: 'var(--line)', fillOpacity: 0.25 }}
+            />
+            <Bar dataKey="value" radius={[5, 5, 0, 0]}>
+              {data.map((d, i) => (
+                <Cell key={i} fill={d.color} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      ) : type === 'linhas' ? (
+        <ResponsiveContainer width="100%" height={240}>
+          <LineChart data={data} margin={{ top: 8, right: 14, bottom: 0, left: -12 }}>
+            <XAxis
+              dataKey="name"
+              interval={0}
+              tickLine={false}
+              axisLine={false}
+              angle={-35}
+              textAnchor="end"
+              height={64}
+              tick={{ fontSize: 10, fill: 'var(--muted)' }}
+              tickFormatter={(n: string) => (n.length > 9 ? n.slice(0, 8) + '…' : n)}
+            />
+            <YAxis hide />
+            <Tooltip
+              formatter={(value) => [brl(Number(value)), '']}
+              separator=""
+              contentStyle={tooltipStyle}
+              itemStyle={{ color: 'var(--txt)' }}
+              labelStyle={{ color: 'var(--txt)' }}
+            />
+            <Line type="monotone" dataKey="value" stroke="var(--cyan)" strokeWidth={2} dot={{ r: 3, fill: 'var(--cyan)' }} activeDot={{ r: 5 }} />
+          </LineChart>
         </ResponsiveContainer>
       ) : (
         <ul className="rank">
