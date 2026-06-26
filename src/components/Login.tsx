@@ -24,36 +24,98 @@ export function Login() {
     setBusy(false)
   }
 
+  function switchTo(m: 'in' | 'up') {
+    setMode(m)
+    setMsg(null)
+  }
+
   return (
-    <div className="center">
-      <form className="card auth" onSubmit={submit}>
-        <h1 className="brand">alien@finanças<span className="accent">:~$</span></h1>
-        <p className="muted small">{mode === 'in' ? 'entrar na sua conta' : 'criar conta'}</p>
-        {mode === 'up' && (
-          <input
-            placeholder="nome de usuário (ex: alien)"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            maxLength={14}
-          />
-        )}
-        <input type="email" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input
-          type="password"
-          placeholder="senha (min. 6)"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-        />
-        <button className="btn primary" disabled={busy}>
-          {busy ? '...' : mode === 'in' ? 'entrar' : 'cadastrar'}
-        </button>
-        {msg && <p className="msg">{msg}</p>}
-        <button type="button" className="link" onClick={() => { setMode(mode === 'in' ? 'up' : 'in'); setMsg(null) }}>
-          {mode === 'in' ? 'não tem conta? cadastre-se' : 'já tem conta? entrar'}
-        </button>
+    <div className="login-scene">
+      <div className="login-glow" aria-hidden="true" />
+      <div className="login-grid" aria-hidden="true" />
+
+      <form className="term" onSubmit={submit}>
+        <div className="term-bar">
+          <span className="tdot r" />
+          <span className="tdot y" />
+          <span className="tdot g" />
+          <span className="term-name">alien-finanças — bash</span>
+        </div>
+
+        <div className="term-body">
+          <h1 className="brand brand-lg">
+            alien@finanças<span className="accent">:~$</span>
+            <span className="caret" aria-hidden="true" />
+          </h1>
+          <p className="term-line">
+            <span className="prompt">$</span> {mode === 'in' ? 'login --user' : 'signup --novo'}
+          </p>
+
+          <div className="auth-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'in'}
+              className={'auth-tab' + (mode === 'in' ? ' on' : '')}
+              onClick={() => switchTo('in')}
+            >
+              entrar
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'up'}
+              className={'auth-tab' + (mode === 'up' ? ' on' : '')}
+              onClick={() => switchTo('up')}
+            >
+              cadastrar
+            </button>
+          </div>
+
+          {mode === 'up' && (
+            <label className="field">
+              <span className="field-pre">user</span>
+              <input
+                aria-label="nome de usuário"
+                placeholder="nome de usuário (ex: alien)"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                maxLength={14}
+              />
+            </label>
+          )}
+          <label className="field">
+            <span className="field-pre">mail</span>
+            <input
+              aria-label="email"
+              type="email"
+              placeholder="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </label>
+          <label className="field">
+            <span className="field-pre">pass</span>
+            <input
+              aria-label="senha"
+              type="password"
+              placeholder="senha (min. 6)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+          </label>
+
+          <button className="btn primary login-go" disabled={busy}>
+            {busy ? '...' : mode === 'in' ? 'entrar' : 'cadastrar'}
+          </button>
+          {msg && <p className="msg">{msg}</p>}
+
+          <p className="term-foot muted small">// suas finanças, 100% no seu terminal</p>
+        </div>
       </form>
     </div>
   )

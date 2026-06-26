@@ -123,9 +123,62 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
   .review-row select { flex: 1 1 100%; }
 }
 .link { background: none; border: none; color: var(--cyan); cursor: pointer; font-size: 13px; padding: 6px 0; display: inline-flex; align-items: center; gap: 5px; }
-.auth { width: 320px; max-width: 100%; display: flex; flex-direction: column; gap: 12px; text-align: center; }
-.auth input { text-align: center; }
 .msg { color: var(--yellow); font-size: 13px; margin: 0; }
+
+/* ----- tela de login (janela de terminal) ----- */
+.login-scene { position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; overflow: hidden; }
+.login-glow {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(620px 380px at 50% 16%, color-mix(in srgb, var(--green) 20%, transparent), transparent 70%),
+    radial-gradient(520px 360px at 82% 88%, color-mix(in srgb, var(--cyan) 16%, transparent), transparent 70%);
+  animation: loginGlow 7s ease-in-out infinite;
+}
+@keyframes loginGlow { 0%, 100% { opacity: 0.82; } 50% { opacity: 1; } }
+.login-grid {
+  position: absolute; inset: -2px; pointer-events: none; opacity: 0.11;
+  background-image:
+    linear-gradient(var(--txt) 1px, transparent 1px),
+    linear-gradient(90deg, var(--txt) 1px, transparent 1px);
+  background-size: 38px 38px;
+  -webkit-mask-image: radial-gradient(circle at 50% 38%, #000 0%, transparent 72%);
+  mask-image: radial-gradient(circle at 50% 38%, #000 0%, transparent 72%);
+}
+.term {
+  position: relative; z-index: 1; width: 380px; max-width: 100%;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  overflow: hidden; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+.term-bar {
+  display: flex; align-items: center; gap: 7px; padding: 10px 13px;
+  background: color-mix(in srgb, var(--panel) 86%, #000); border-bottom: 1px solid var(--line);
+}
+.tdot { width: 11px; height: 11px; border-radius: 50%; flex: none; }
+.tdot.r { background: #ff5f57; }
+.tdot.y { background: #febc2e; }
+.tdot.g { background: #28c840; }
+.term-name { margin-left: 8px; font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: var(--muted); }
+.term-body { padding: 22px 20px 20px; display: flex; flex-direction: column; gap: 13px; }
+.brand-lg { font-size: 26px; line-height: 1.2; }
+.caret { display: inline-block; width: 9px; height: 1.05em; background: var(--green); margin-left: 3px; vertical-align: -2px; animation: caretBlink 1.05s steps(1) infinite; }
+@keyframes caretBlink { 50% { opacity: 0; } }
+.term-line { margin: -4px 0 2px; font-family: ui-monospace, Consolas, monospace; font-size: 13px; color: var(--muted); }
+.term-line .prompt { color: var(--green); }
+.auth-tabs { display: flex; gap: 5px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 4px; }
+.auth-tab { flex: 1; padding: 8px; border: none; border-radius: 7px; background: none; color: var(--muted); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.auth-tab.on { background: var(--panel); color: var(--green); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); }
+.field {
+  display: flex; align-items: center; gap: 9px; padding: 0 11px;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 9px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field:focus-within { border-color: var(--cyan); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cyan) 22%, transparent); }
+.field-pre { flex: none; width: 32px; font-family: ui-monospace, Consolas, monospace; font-size: 11px; color: var(--muted); }
+.field input { flex: 1; min-width: 0; border: none; background: none; padding: 11px 0; border-radius: 0; }
+.field input:focus { outline: none; }
+.login-go { width: 100%; margin-top: 3px; transition: filter 0.15s ease; }
+.login-go:hover:not(:disabled) { filter: brightness(1.07); }
+.term-foot { text-align: center; margin: 4px 0 0; font-family: ui-monospace, Consolas, monospace; }
 .txs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .tx { display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--line); }
 .tx:last-child { border-bottom: none; }
