@@ -29,6 +29,8 @@ import { Account } from '../Account'
 import { About } from '../About'
 import { TxModal } from '../TxModal'
 import { ScrollTopButton } from '../ScrollTopButton'
+import { Customize } from '../Customize'
+import { loadOrder, loadCaret, saveOrder, saveCaret, type BlockKey } from '../../lib/customization'
 
 export function Dashboard({ session }: { session: Session }) {
   const username =
@@ -55,16 +57,21 @@ export function Dashboard({ session }: { session: Session }) {
   const [showAccount, setShowAccount] = useState(false)
   const [showAbout, setShowAbout] = useState(false)
   const [showAll, setShowAll] = useState(false)
+  const [showCustomize, setShowCustomize] = useState(false)
+
+  // customização do layout (salva neste aparelho)
+  const [caret, setCaret] = useState(loadCaret())
+  const [order, setOrder] = useState<BlockKey[]>(loadOrder())
 
   // trava o scroll do fundo enquanto um modal está aberto (menu/calendário são popovers, não travam)
   useEffect(() => {
-    const open = !!reviewData || showSettings || showAccount || showAbout || showAll
+    const open = !!reviewData || showSettings || showAccount || showAbout || showAll || showCustomize
     if (!open) return
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = ''
     }
-  }, [reviewData, showSettings, showAccount, showAbout, showAll])
+  }, [reviewData, showSettings, showAccount, showAbout, showAll, showCustomize])
 
   // derivados — lógica pura em lib/finance
   const periodTxs = useMemo(() => filterByPeriod(txs, period, customFrom, customTo), [txs, period, customFrom, customTo])
@@ -83,6 +90,43 @@ export function Dashboard({ session }: { session: Session }) {
     [periodTxs, catFilter],
   )
   const label = periodLabel(period, customFrom, customTo)
+
+  /** desenha cada seção do dashboard na ordem escolhida pelo usuário */
+  const renderBlock = (key: BlockKey) => {
+    switch (key) {
+      case 'kpis':
+        return <Kpis key="kpis" renda={totals.renda} gastos={totals.gastos} saldo={totals.saldo} periodLabel={label} />
+      case 'entry':
+        return <EntryForm key="entry" cats={cats} onAdd={addTx} onScanned={setReviewData} />
+      case 'chart':
+        return <CategoryChart key="chart" data={pie} timeSeries={timeSeries} periodLabel={label} />
+      case 'summary':
+        return txs.length > 0 ? (
+          <Summary
+            key="summary"
+            insights={insights}
+            saldo={totals.saldo}
+            gastos={totals.gastos}
+            period={period}
+            periodLabel={label}
+            hasPeriodTxs={periodTxs.length > 0}
+          />
+        ) : null
+      case 'txs':
+        return (
+          <TransactionsCard
+            key="txs"
+            txs={listTxs}
+            cats={cats}
+            catFilter={catFilter}
+            onCatFilter={setCatFilter}
+            onDelete={delTx}
+            onUpdate={updateTx}
+            onShowAll={() => setShowAll(true)}
+          />
+        )
+    }
+  }
 
   function exportCSV() {
     if (!txs.length) {
@@ -109,14 +153,16 @@ export function Dashboard({ session }: { session: Session }) {
 
   if (loading) return <div className="center muted">carregando seus dados...</div>
 
-  const anyModal = !!reviewData || showSettings || showAccount || showAbout || showAll
+  const anyModal = !!reviewData || showSettings || showAccount || showAbout || showAll || showCustomize
 
   return (
     <div className="app">
       <TopBar
         handle={handle}
         profile={profile}
+        showCaret={caret}
         onSettings={() => setShowSettings(true)}
+        onCustomize={() => setShowCustomize(true)}
         onAccount={() => setShowAccount(true)}
         onExport={exportCSV}
         onAbout={() => setShowAbout(true)}
@@ -137,33 +183,7 @@ export function Dashboard({ session }: { session: Session }) {
         }}
       />
 
-      <Kpis renda={totals.renda} gastos={totals.gastos} saldo={totals.saldo} periodLabel={label} />
-
-      <div className="grid2">
-        <EntryForm cats={cats} onAdd={addTx} onScanned={setReviewData} />
-        <CategoryChart data={pie} timeSeries={timeSeries} periodLabel={label} />
-      </div>
-
-      {txs.length > 0 && (
-        <Summary
-          insights={insights}
-          saldo={totals.saldo}
-          gastos={totals.gastos}
-          period={period}
-          periodLabel={label}
-          hasPeriodTxs={periodTxs.length > 0}
-        />
-      )}
-
-      <TransactionsCard
-        txs={listTxs}
-        cats={cats}
-        catFilter={catFilter}
-        onCatFilter={setCatFilter}
-        onDelete={delTx}
-        onUpdate={updateTx}
-        onShowAll={() => setShowAll(true)}
-      />
+      {order.map(renderBlock)}
 
       {reviewData && (
         <ScanReview
@@ -212,6 +232,21 @@ export function Dashboard({ session }: { session: Session }) {
       )}
 
       {showAbout && <About isOwner={session.user.id === OWNER_ID} onClose={() => setShowAbout(false)} />}
+
+      {showCustomize && (
+        <Customize
+          caret={caret}
+          order={order}
+          onClose={() => setShowCustomize(false)}
+          onSave={({ caret: c, order: o }) => {
+            setCaret(c)
+            saveCaret(c)
+            setOrder(o)
+            saveOrder(o)
+            setShowCustomize(false)
+          }}
+        />
+      )}
 
       {showAll && (
         <TxModal txs={listTxs} cats={cats} onDelete={delTx} onUpdate={updateTx} onClose={() => setShowAll(false)} />

@@ -6,7 +6,9 @@ import { Icon } from '../Icon'
 type Props = {
   handle: string
   profile: Profile | null
+  showCaret: boolean
   onSettings: () => void
+  onCustomize: () => void
   onAccount: () => void
   onExport: () => void
   onAbout: () => void
@@ -14,7 +16,7 @@ type Props = {
 }
 
 /** cabeçalho: marca, bio do perfil e o menu (≡) com as ações do app */
-export function TopBar({ handle, profile, onSettings, onAccount, onExport, onAbout, onSignOut }: Props) {
+export function TopBar({ handle, profile, showCaret, onSettings, onCustomize, onAccount, onExport, onAbout, onSignOut }: Props) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   useDismissable(open, ref, () => setOpen(false))
@@ -29,7 +31,7 @@ export function TopBar({ handle, profile, onSettings, onAccount, onExport, onAbo
       <div className="brand-wrap">
         <h1 className="brand">
           {handle}@finanças<span className="accent">:~$</span> <span className="dim">dashboard</span>
-          <span className="caret" aria-hidden="true" />
+          {showCaret && <span className="caret" aria-hidden="true" />}
         </h1>
         {(profile?.profession || (profile?.hobbies?.length ?? 0) > 0) && (
           <p className="bio">
@@ -57,6 +59,9 @@ export function TopBar({ handle, profile, onSettings, onAccount, onExport, onAbo
           <div className="menu" role="menu">
             <button className="menu-item" role="menuitem" onClick={pick(onSettings)}>
               <Icon name="settings" className="menu-ico" /> configurações
+            </button>
+            <button className="menu-item" role="menuitem" onClick={pick(onCustomize)}>
+              <Icon name="layout" className="menu-ico" /> customização
             </button>
             <button className="menu-item" role="menuitem" onClick={pick(onAccount)}>
               <Icon name="user" className="menu-ico" /> minha conta
