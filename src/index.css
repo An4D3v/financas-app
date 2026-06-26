@@ -162,11 +162,18 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 .brand-lg { font-size: 26px; line-height: 1.2; }
 .caret { display: inline-block; width: 9px; height: 1.05em; background: var(--green); margin-left: 3px; vertical-align: -2px; animation: caretBlink 1.05s steps(1) infinite; }
 @keyframes caretBlink { 50% { opacity: 0; } }
-.term-line { margin: -4px 0 2px; font-family: ui-monospace, Consolas, monospace; font-size: 13px; color: var(--muted); }
+.term-line { margin: -4px 0 2px; font-family: ui-monospace, Consolas, monospace; font-size: 13px; color: var(--muted); animation: swapIn 0.26s ease; }
 .term-line .prompt { color: var(--green); }
-.auth-tabs { display: flex; gap: 5px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 4px; }
-.auth-tab { flex: 1; padding: 8px; border: none; border-radius: 7px; background: none; color: var(--muted); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
-.auth-tab.on { background: var(--panel); color: var(--green); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); }
+@keyframes swapIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+.auth-tabs { position: relative; display: flex; gap: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 4px; }
+.auth-ind {
+  position: absolute; z-index: 0; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px);
+  border-radius: 7px; background: var(--panel); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.auth-ind.up { transform: translateX(100%); }
+.auth-tab { position: relative; z-index: 1; flex: 1; padding: 8px; border: none; border-radius: 7px; background: none; color: var(--muted); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: color 0.2s ease; }
+.auth-tab.on { color: var(--green); }
 .field {
   display: flex; align-items: center; gap: 9px; padding: 0 11px;
   background: var(--bg); border: 1px solid var(--line); border-radius: 9px;
@@ -176,7 +183,15 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 .field-pre { flex: none; width: 32px; font-family: ui-monospace, Consolas, monospace; font-size: 11px; color: var(--muted); }
 .field input { flex: 1; min-width: 0; border: none; background: none; padding: 11px 0; border-radius: 0; }
 .field input:focus { outline: none; }
+/* campo de usuário que expande/recolhe suavemente ao trocar entrar<->cadastrar */
+.field-collapse {
+  display: grid; grid-template-rows: 0fr; opacity: 0; margin-bottom: -13px;
+  transition: grid-template-rows 0.28s ease, opacity 0.24s ease, margin-bottom 0.28s ease;
+}
+.field-collapse.open { grid-template-rows: 1fr; opacity: 1; margin-bottom: 0; }
+.field-collapse > .field { overflow: hidden; min-height: 0; }
 .login-go { width: 100%; margin-top: 3px; transition: filter 0.15s ease; }
+.login-go .swap { display: inline-block; animation: swapIn 0.24s ease; }
 .login-go:hover:not(:disabled) { filter: brightness(1.07); }
 .term-foot { text-align: center; margin: 4px 0 0; font-family: ui-monospace, Consolas, monospace; }
 .txs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }

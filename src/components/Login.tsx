@@ -47,11 +47,12 @@ export function Login() {
             alien@finanças<span className="accent">:~$</span>
             <span className="caret" aria-hidden="true" />
           </h1>
-          <p className="term-line">
+          <p className="term-line" key={mode}>
             <span className="prompt">$</span> {mode === 'in' ? 'login --user' : 'signup --novo'}
           </p>
 
           <div className="auth-tabs" role="tablist">
+            <span className={'auth-ind' + (mode === 'up' ? ' up' : '')} aria-hidden="true" />
             <button
               type="button"
               role="tab"
@@ -72,7 +73,7 @@ export function Login() {
             </button>
           </div>
 
-          {mode === 'up' && (
+          <div className={'field-collapse' + (mode === 'up' ? ' open' : '')}>
             <label className="field">
               <span className="field-pre">user</span>
               <input
@@ -80,11 +81,12 @@ export function Login() {
                 placeholder="nome de usuário (ex: alien)"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                required
+                required={mode === 'up'}
+                disabled={mode === 'in'}
                 maxLength={14}
               />
             </label>
-          )}
+          </div>
           <label className="field">
             <span className="field-pre">mail</span>
             <input
@@ -110,7 +112,13 @@ export function Login() {
           </label>
 
           <button className="btn primary login-go" disabled={busy}>
-            {busy ? '...' : mode === 'in' ? 'entrar' : 'cadastrar'}
+            {busy ? (
+              '...'
+            ) : (
+              <span className="swap" key={mode}>
+                {mode === 'in' ? 'entrar' : 'cadastrar'}
+              </span>
+            )}
           </button>
           {msg && <p className="msg">{msg}</p>}
 
