@@ -56,9 +56,19 @@ body {
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
 .ttl { font-family: ui-monospace, Consolas, monospace; font-size: 14px; color: var(--cyan); margin: 0 0 12px; }
 .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
-.kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+.kpi {
+  position: relative; overflow: hidden;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 14px 14px 17px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.kpi::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--line); }
+.kpi-in::before { background: var(--cyan); }
+.kpi-out::before { background: var(--pink); }
+.kpi-bal::before { background: var(--green); }
+.kpi-neg::before { background: var(--red); }
+.kpi:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22); }
 .kpi .lbl { display: block; font-family: ui-monospace, Consolas, monospace; font-size: 11px; color: var(--muted); }
-.kpi .val { display: block; font-family: ui-monospace, Consolas, monospace; font-size: 20px; font-weight: 800; margin-top: 6px; }
+.kpi .val { display: block; font-family: ui-monospace, Consolas, monospace; font-size: 21px; font-weight: 800; margin-top: 6px; }
 .cyan { color: var(--cyan); }
 .pink { color: var(--pink); }
 .green { color: var(--green); }
@@ -259,7 +269,14 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 .cal-apply { padding: 6px 12px; font-size: 13px; }
 
 /* boas-vindas (user novo, sem dados) */
-.card.welcome { border-color: var(--green); }
+.card.welcome {
+  border-color: var(--green);
+  background:
+    radial-gradient(440px 220px at 0% 0%, color-mix(in srgb, var(--green) 13%, transparent), transparent 70%),
+    var(--panel);
+}
+.card.welcome .ttl { color: var(--green); }
+.card.welcome .ins-ico { color: var(--green); }
 
 /* resumo / insights */
 .insights { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 11px; }
