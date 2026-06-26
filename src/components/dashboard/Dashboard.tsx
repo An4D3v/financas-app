@@ -48,6 +48,16 @@ export function Dashboard({ session }: { session: Session }) {
   const [showAbout, setShowAbout] = useState(false)
   const [showAll, setShowAll] = useState(false)
 
+  // trava o scroll do fundo enquanto um modal está aberto (menu/calendário são popovers, não travam)
+  useEffect(() => {
+    const open = !!reviewData || showSettings || showAccount || showAbout || showAll
+    if (!open) return
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [reviewData, showSettings, showAccount, showAbout, showAll])
+
   // derivados — lógica pura em lib/finance
   const periodTxs = useMemo(() => filterByPeriod(txs, period, customFrom, customTo), [txs, period, customFrom, customTo])
   const totals = useMemo(() => computeTotals(periodTxs), [periodTxs])

@@ -123,11 +123,11 @@ export function Settings({
         <div className="modal-foot">
           <span className="muted small">preview na hora; sem salvar, volta ao anterior</span>
           <div>
-            <button type="button" className="link" onClick={onClose}>
-              cancelar
+            <button type="button" className="link btn-ico" onClick={onClose} title="cancelar" aria-label="cancelar">
+              <Icon name="x" />
             </button>
-            <button className="btn primary" disabled={saving} onClick={save}>
-              {saving ? '...' : 'salvar'}
+            <button className="btn primary btn-ico" disabled={saving} onClick={save} title="salvar" aria-label="salvar">
+              {saving ? '...' : <Icon name="save" />}
             </button>
           </div>
         </div>
