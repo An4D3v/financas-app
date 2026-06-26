@@ -16,6 +16,7 @@ export function Settings({
   hobbies: initHobbies,
   theme,
   caret,
+  showCaretToggle,
   onPreview,
   onClose,
   onSave,
@@ -25,6 +26,7 @@ export function Settings({
   hobbies: string[]
   theme: ThemePref
   caret: boolean
+  showCaretToggle: boolean
   onPreview: (t: ThemePref) => void
   onClose: () => void
   onSave: (data: { profession: string; hobbies: string[]; theme: ThemePref; caret: boolean }) => Promise<void>
@@ -87,22 +89,24 @@ export function Settings({
           </div>
         </div>
 
-        <div className="set-section">
-          <span className="set-label">// cursor piscando</span>
-          <div className="switch-row">
-            <span className="muted small">o bloco verde que pisca na marca do topo</span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={caretDraft}
-              aria-label="cursor piscando"
-              className={'switch' + (caretDraft ? ' on' : '')}
-              onClick={() => setCaretDraft((v) => !v)}
-            >
-              <span className="knob" />
-            </button>
+        {showCaretToggle && (
+          <div className="set-section">
+            <span className="set-label">// cursor piscando</span>
+            <div className="switch-row">
+              <span className="muted small">o bloco verde que pisca na marca do topo</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={caretDraft}
+                aria-label="cursor piscando"
+                className={'switch' + (caretDraft ? ' on' : '')}
+                onClick={() => setCaretDraft((v) => !v)}
+              >
+                <span className="knob" />
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="set-section">
           <span className="set-label">// profissão</span>

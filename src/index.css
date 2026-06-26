@@ -76,14 +76,17 @@ body {
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 /* card do gráfico acompanha a altura do card de "novo lançamento" e rola por dentro */
 .chart-card { display: flex; flex-direction: column; }
-.chart-body { flex: 1; min-height: 240px; overflow-y: auto; }
-.chart-body.centered { display: flex; flex-direction: column; justify-content: center; }
+/* a altura do card acompanha o "novo lançamento" (stretch do grid no desktop / 360px no mobile);
+   o conteúdo do gráfico fica absoluto p/ não esticar o card e rola por dentro */
+.chart-body { flex: 1; min-height: 0; position: relative; }
+.chart-inner { position: absolute; inset: 0; overflow-y: auto; }
+.chart-inner.centered { display: flex; flex-direction: column; justify-content: center; }
 /* barra de rolagem personalizada — fina, ciano, some quando não está em uso */
-.chart-body, .tx-scroll, .review-rows { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
-.chart-body::-webkit-scrollbar, .tx-scroll::-webkit-scrollbar, .review-rows::-webkit-scrollbar { width: 6px; height: 6px; }
-.chart-body::-webkit-scrollbar-track, .tx-scroll::-webkit-scrollbar-track, .review-rows::-webkit-scrollbar-track { background: transparent; }
-.chart-body::-webkit-scrollbar-thumb, .tx-scroll::-webkit-scrollbar-thumb, .review-rows::-webkit-scrollbar-thumb { background: transparent; border-radius: 3px; }
-.chart-body:hover::-webkit-scrollbar-thumb, .tx-scroll:hover::-webkit-scrollbar-thumb, .review-rows:hover::-webkit-scrollbar-thumb { background: var(--cyan); }
+.chart-inner, .tx-scroll, .review-rows { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.chart-inner::-webkit-scrollbar, .tx-scroll::-webkit-scrollbar, .review-rows::-webkit-scrollbar { width: 6px; height: 6px; }
+.chart-inner::-webkit-scrollbar-track, .tx-scroll::-webkit-scrollbar-track, .review-rows::-webkit-scrollbar-track { background: transparent; }
+.chart-inner::-webkit-scrollbar-thumb, .tx-scroll::-webkit-scrollbar-thumb, .review-rows::-webkit-scrollbar-thumb { background: transparent; border-radius: 3px; }
+.chart-inner:hover::-webkit-scrollbar-thumb, .tx-scroll:hover::-webkit-scrollbar-thumb, .review-rows:hover::-webkit-scrollbar-thumb { background: var(--cyan); }
 .form { display: flex; flex-direction: column; gap: 10px; }
 .row { display: flex; gap: 10px; }
 .row > * { flex: 1; min-width: 0; }

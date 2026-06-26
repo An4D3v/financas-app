@@ -223,6 +223,7 @@ export function Dashboard({ session }: { session: Session }) {
           hobbies={profile?.hobbies ?? []}
           theme={theme}
           caret={caret}
+          showCaretToggle={!isMobile}
           onPreview={previewTheme}
           onClose={() => {
             previewTheme(theme) // descarta o preview, volta ao tema salvo
@@ -255,9 +256,12 @@ export function Dashboard({ session }: { session: Session }) {
 
       {showCustomize && (
         <Customize
+          caret={caret}
           order={order}
           onClose={() => setShowCustomize(false)}
-          onSave={(o) => {
+          onSave={({ caret: c, order: o }) => {
+            setCaret(c)
+            saveCaret(c)
             setOrder(o)
             saveOrder(o)
             setShowCustomize(false)
