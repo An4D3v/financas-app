@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Icon } from './Icon'
 
 const WD = ['d', 's', 't', 'q', 'q', 's', 's']
 const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
@@ -115,7 +116,7 @@ export function RangeCalendar({
         </span>
         <div>
           <button type="button" className="link" onClick={onClose}>
-            fechar
+            <Icon name="x" /> fechar
           </button>
           <button
             type="button"
@@ -123,7 +124,7 @@ export function RangeCalendar({
             disabled={!start}
             onClick={() => start && onApply(start, end || start)}
           >
-            salvar
+            <Icon name="save" /> salvar
           </button>
         </div>
       </div>

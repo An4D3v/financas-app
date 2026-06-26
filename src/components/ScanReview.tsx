@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { brl } from '../lib/format'
+import { Icon } from './Icon'
 import type { Category, ReviewRow } from '../types'
 
 export function ScanReview({
@@ -109,10 +110,16 @@ export function ScanReview({
           )}
           <div>
             <button type="button" className="link" onClick={onCancel}>
-              cancelar
+              <Icon name="x" /> cancelar
             </button>
             <button className="btn primary" disabled={saving || rows.length === 0} onClick={confirm}>
-              {saving ? '...' : 'adicionar ' + rows.length}
+              {saving ? (
+                '...'
+              ) : (
+                <>
+                  <Icon name="plus" /> adicionar {rows.length}
+                </>
+              )}
             </button>
           </div>
         </div>

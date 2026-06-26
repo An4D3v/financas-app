@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { toHandle } from '../lib/format'
+import { Icon } from './Icon'
 
 export function Account({
   email,
@@ -105,7 +106,13 @@ export function Account({
               disabled={ubusy || !uname.trim()}
               onClick={changeUsername}
             >
-              {ubusy ? '...' : 'atualizar'}
+              {ubusy ? (
+                '...'
+              ) : (
+                <>
+                  <Icon name="check" /> atualizar
+                </>
+              )}
             </button>
           </div>
           <p className="muted small">
@@ -125,7 +132,13 @@ export function Account({
               onChange={(e) => setPw(e.target.value)}
             />
             <button className="btn primary" style={{ flex: 'none' }} disabled={busy || !pw} onClick={changePw}>
-              {busy ? '...' : 'atualizar'}
+              {busy ? (
+                '...'
+              ) : (
+                <>
+                  <Icon name="check" /> atualizar
+                </>
+              )}
             </button>
           </div>
           {msg && <p className="msg">{msg}</p>}
@@ -135,7 +148,7 @@ export function Account({
           <span className="muted small">protegido por rls — só você acessa</span>
           <div>
             <button type="button" className="link" onClick={onClose}>
-              fechar
+              <Icon name="x" /> fechar
             </button>
           </div>
         </div>

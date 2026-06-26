@@ -95,7 +95,13 @@ export function EntryForm({ cats, onAdd, onScanned }: Props) {
           <input inputMode="decimal" placeholder="valor R$" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </div>
         <button className="btn primary" disabled={saving}>
-          {saving ? '...' : 'adicionar'}
+          {saving ? (
+            '...'
+          ) : (
+            <>
+              <Icon name="plus" /> adicionar
+            </>
+          )}
         </button>
       </form>
     </section>
