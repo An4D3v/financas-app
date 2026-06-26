@@ -4,7 +4,15 @@ import { supabase } from '../../lib/supabase'
 import { applyTheme, previewTheme, getStoredTheme, type ThemePref } from '../../lib/theme'
 import { todayStr, toHandle } from '../../lib/format'
 import { OWNER_ID } from '../../lib/constants'
-import { filterByPeriod, computeTotals, computePie, computeInsights, periodLabel, type Period } from '../../lib/finance'
+import {
+  filterByPeriod,
+  computeTotals,
+  computePie,
+  computeInsights,
+  periodLabel,
+  buildCategoryTimeSeries,
+  type Period,
+} from '../../lib/finance'
 import { useFinanceData } from '../../hooks/useFinanceData'
 import type { ScanResult } from '../../lib/scan'
 import { TopBar } from './TopBar'
@@ -62,6 +70,10 @@ export function Dashboard({ session }: { session: Session }) {
   const periodTxs = useMemo(() => filterByPeriod(txs, period, customFrom, customTo), [txs, period, customFrom, customTo])
   const totals = useMemo(() => computeTotals(periodTxs), [periodTxs])
   const pie = useMemo(() => computePie(periodTxs), [periodTxs])
+  const timeSeries = useMemo(
+    () => buildCategoryTimeSeries(periodTxs, period, customFrom, customTo),
+    [periodTxs, period, customFrom, customTo],
+  )
   const insights = useMemo(
     () => computeInsights(txs, periodTxs, period, totals, pie, customFrom, customTo),
     [txs, periodTxs, period, totals, pie, customFrom, customTo],
@@ -129,7 +141,7 @@ export function Dashboard({ session }: { session: Session }) {
 
       <div className="grid2">
         <EntryForm cats={cats} onAdd={addTx} onScanned={setReviewData} />
-        <CategoryChart data={pie} periodLabel={label} />
+        <CategoryChart data={pie} timeSeries={timeSeries} periodLabel={label} />
       </div>
 
       {txs.length > 0 && (

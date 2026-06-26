@@ -163,3 +163,107 @@ export function computeInsights(
 
   return { savingRate, top, topPct, dailyAvg, biggest, pct, prevLabel }
 }
+
+// ----- série temporal (gráfico de linhas) -----
+
+export type TimePoint = Record<string, number | string>
+export type TimeSeries = { points: TimePoint[]; lines: { name: string; color: string }[] }
+
+const MONTHS_ABBR = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+
+/** lista de datas YYYY-MM-DD de start a end (inclusive) */
+function dayRange(start: string, end: string): string[] {
+  const out: string[] = []
+  let d = start
+  let guard = 0
+  while (d <= end && guard++ < 370) {
+    out.push(d)
+    d = addDays(d, 1)
+  }
+  return out
+}
+
+/** lista de meses YYYY-MM de start a end (inclusive) */
+function monthRange(start: string, end: string): string[] {
+  const out: string[] = []
+  let y = Number(start.slice(0, 4))
+  let m = Number(start.slice(5, 7))
+  const ey = Number(end.slice(0, 4))
+  const em = Number(end.slice(5, 7))
+  let guard = 0
+  while ((y < ey || (y === ey && m <= em)) && guard++ < 120) {
+    out.push(`${y}-${String(m).padStart(2, '0')}`)
+    if (++m > 12) {
+      m = 1
+      y++
+    }
+  }
+  return out
+}
+
+/**
+ * série temporal de saídas: eixo X = datas (dia a dia, ou mês a mês no "tudo"),
+ * uma linha por categoria (as 6 maiores, p/ não poluir), cada uma com a cor da categoria.
+ */
+export function buildCategoryTimeSeries(periodTxs: Transaction[], period: Period, from = '', to = ''): TimeSeries {
+  const today = todayStr()
+  const saidas = periodTxs.filter((t) => t.type === 'saida')
+
+  // escolhe as top 6 categorias (por total) e guarda as cores
+  const totals = new Map<string, { total: number; color: string }>()
+  for (const t of saidas) {
+    const name = t.categories?.name ?? 'sem categoria'
+    const cur = totals.get(name) ?? { total: 0, color: t.categories?.color ?? NO_CATEGORY_COLOR }
+    cur.total += Number(t.amount)
+    totals.set(name, cur)
+  }
+  const lines = [...totals.entries()]
+    .sort((a, b) => b[1].total - a[1].total)
+    .slice(0, 6)
+    .map(([name, v]) => ({ name, color: v.color }))
+  const lineNames = new Set(lines.map((l) => l.name))
+
+  // define os "baldes" do eixo X
+  let keys: { key: string; label: string }[]
+  let bucketOf: (occurredOn: string) => string
+  if (period === 'tudo') {
+    const months = saidas.map((t) => t.occurred_on.slice(0, 7)).sort()
+    const startM = months[0] ?? today.slice(0, 7)
+    keys = monthRange(startM, today.slice(0, 7)).map((m) => ({
+      key: m,
+      label: `${MONTHS_ABBR[Number(m.slice(5, 7)) - 1]}/${m.slice(2, 4)}`,
+    }))
+    bucketOf = (on) => on.slice(0, 7)
+  } else {
+    let start = today
+    let end = today
+    if (period === 'semana') start = daysAgoStr(6)
+    else if (period === 'mes') start = today.slice(0, 7) + '-01'
+    else if (period === 'custom' && from && to) {
+      start = from
+      end = to
+    }
+    keys = dayRange(start, end).map((d) => ({ key: d, label: brDate(d) }))
+    bucketOf = (on) => on
+  }
+
+  // soma as saídas por balde × categoria
+  const byKey = new Map<string, Record<string, number>>()
+  for (const k of keys) byKey.set(k.key, {})
+  for (const t of saidas) {
+    const name = t.categories?.name ?? 'sem categoria'
+    if (!lineNames.has(name)) continue
+    const row = byKey.get(bucketOf(t.occurred_on))
+    if (!row) continue
+    row[name] = (row[name] ?? 0) + Number(t.amount)
+  }
+
+  const points: TimePoint[] = keys.map((k) => {
+    const row = byKey.get(k.key) ?? {}
+    const p: TimePoint = { label: k.label }
+    for (const l of lines) p[l.name] = row[l.name] ?? 0
+    return p
+  })
+
+  return { points, lines }
+}

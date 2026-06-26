@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, LineChart, Line } from 'recharts'
 import { brl } from '../../lib/format'
-import type { PieSlice } from '../../lib/finance'
+import type { PieSlice, TimeSeries } from '../../lib/finance'
 
-type Props = { data: PieSlice[]; periodLabel: string }
+type Props = { data: PieSlice[]; timeSeries: TimeSeries; periodLabel: string }
 type ChartType = 'pizza' | 'barras' | 'colunas' | 'linhas' | 'lista'
 
 const STORE_KEY = 'fin-chart'
 const tooltipStyle = { background: 'var(--panel)', border: '1px solid var(--line)', borderRadius: 8, color: 'var(--txt)' }
 
 /** gráfico de gastos por categoria — alterna entre pizza, barras e lista (ranking) */
-export function CategoryChart({ data, periodLabel }: Props) {
+export function CategoryChart({ data, timeSeries, periodLabel }: Props) {
   const [type, setType] = useState<ChartType>(() => {
     const v = localStorage.getItem(STORE_KEY)
     return v && ['barras', 'colunas', 'linhas', 'lista'].includes(v) ? (v as ChartType) : 'pizza'
@@ -115,27 +115,31 @@ export function CategoryChart({ data, periodLabel }: Props) {
         </ResponsiveContainer>
       ) : type === 'linhas' ? (
         <ResponsiveContainer width="100%" height={240}>
-          <LineChart data={data} margin={{ top: 8, right: 14, bottom: 0, left: -12 }}>
+          <LineChart data={timeSeries.points} margin={{ top: 8, right: 14, bottom: 0, left: -12 }}>
             <XAxis
-              dataKey="name"
-              interval={0}
+              dataKey="label"
+              interval="preserveStartEnd"
               tickLine={false}
               axisLine={false}
-              angle={-35}
-              textAnchor="end"
-              height={64}
               tick={{ fontSize: 10, fill: 'var(--muted)' }}
-              tickFormatter={(n: string) => (n.length > 9 ? n.slice(0, 8) + '…' : n)}
             />
             <YAxis hide />
             <Tooltip
-              formatter={(value) => [brl(Number(value)), '']}
-              separator=""
+              formatter={(value, name) => [brl(Number(value)), name]}
               contentStyle={tooltipStyle}
-              itemStyle={{ color: 'var(--txt)' }}
               labelStyle={{ color: 'var(--txt)' }}
             />
-            <Line type="monotone" dataKey="value" stroke="var(--cyan)" strokeWidth={2} dot={{ r: 3, fill: 'var(--cyan)' }} activeDot={{ r: 5 }} />
+            {timeSeries.lines.map((l) => (
+              <Line
+                key={l.name}
+                type="monotone"
+                dataKey={l.name}
+                stroke={l.color}
+                strokeWidth={2}
+                dot={timeSeries.points.length <= 10 ? { r: 2, fill: l.color } : false}
+                activeDot={{ r: 4 }}
+              />
+            ))}
           </LineChart>
         </ResponsiveContainer>
       ) : (
