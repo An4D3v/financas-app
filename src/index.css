@@ -93,12 +93,16 @@ input, select {
 }
 input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transparent; }
 .btn { border: none; border-radius: 9px; padding: 11px 14px; font-size: 14px; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-.btn.primary { background: var(--green); color: #06210f; }
+.btn.primary { background: var(--green); color: #06210f; transition: filter 0.15s ease; }
 .btn.primary:disabled { opacity: 0.6; cursor: default; }
-.btn.scan { background: var(--cyan); color: #04222a; width: 100%; margin-bottom: 10px; }
+.btn.primary:hover:not(:disabled) { filter: brightness(1.07); }
+.btn.scan { background: var(--cyan); color: #04222a; width: 100%; margin-bottom: 10px; transition: filter 0.15s ease; }
 .btn.scan:disabled { opacity: 0.6; cursor: default; }
-.modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
-.modal { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; width: 540px; max-width: 100%; max-height: 90vh; display: flex; flex-direction: column; position: relative; overflow-wrap: anywhere; }
+.btn.scan:hover:not(:disabled) { filter: brightness(1.07); }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; animation: overlayIn 0.18s ease; }
+.modal { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; width: 540px; max-width: 100%; max-height: 90vh; display: flex; flex-direction: column; position: relative; overflow-wrap: anywhere; animation: modalPop 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modalPop { from { opacity: 0; transform: translateY(10px) scale(0.985); } to { opacity: 1; transform: none; } }
 .modal-head { display: flex; justify-content: space-between; align-items: center; }
 .review-rows { overflow-y: auto; margin: 10px 0; display: flex; flex-direction: column; gap: 8px; }
 .review-row { display: flex; gap: 6px; align-items: center; }
@@ -205,8 +209,9 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 .login-go:hover:not(:disabled) { filter: brightness(1.07); }
 .term-foot { text-align: center; margin: 4px 0 0; font-family: ui-monospace, Consolas, monospace; }
 .txs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-.tx { display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--line); }
+.tx { display: flex; align-items: center; gap: 10px; padding: 11px 8px; border-bottom: 1px solid var(--line); border-radius: 8px; transition: background 0.12s ease; }
 .tx:last-child { border-bottom: none; }
+.tx:hover { background: var(--bg); }
 .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
 .tx-date { font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: var(--muted); width: 42px; flex: none; }
 .tx-desc { flex: 1; font-size: 14px; min-width: 0; }
@@ -380,4 +385,12 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
     font-size: 19px; line-height: 1; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   }
   .scroll-top.in-modal { position: absolute; right: 14px; bottom: 14px; z-index: 70; }
+}
+
+/* respeita quem prefere menos animação (acessibilidade do SO) */
+@media (prefers-reduced-motion: reduce) {
+  .login-glow, .caret, .modal, .modal-overlay, .term-line, .login-go .swap, .auth-ind, .field-collapse {
+    animation: none !important;
+    transition: none !important;
+  }
 }

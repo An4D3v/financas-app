@@ -29,6 +29,7 @@ export function TopBar({ handle, profile, onSettings, onAccount, onExport, onAbo
       <div className="brand-wrap">
         <h1 className="brand">
           {handle}@finanças<span className="accent">:~$</span> <span className="dim">dashboard</span>
+          <span className="caret" aria-hidden="true" />
         </h1>
         {(profile?.profession || (profile?.hobbies?.length ?? 0) > 0) && (
           <p className="bio">
