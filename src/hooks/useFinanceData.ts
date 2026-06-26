@@ -31,8 +31,15 @@ export function useFinanceData(session: Session) {
         .order('created_at', { ascending: false }),
       supabase.from('profiles').select('*').maybeSingle(),
     ])
-    setCats((catsRes.data as Category[]) ?? [])
-    setTxs((txRes.data as Transaction[]) ?? [])
+    // nomes de categoria sempre em minúsculo (combina com a estética do app)
+    const rawCats = (catsRes.data as Category[]) ?? []
+    setCats(rawCats.map((c) => ({ ...c, name: c.name.toLowerCase() })))
+    const rawTxs = (txRes.data as Transaction[]) ?? []
+    setTxs(
+      rawTxs.map((t) =>
+        t.categories ? { ...t, categories: { ...t.categories, name: t.categories.name.toLowerCase() } } : t,
+      ),
+    )
     const prof = (profRes.data as Profile | null) ?? null
     setProfile(prof)
     if (prof?.theme) applyTheme(prof.theme)

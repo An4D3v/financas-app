@@ -227,13 +227,22 @@ export function buildCategoryTimeSeries(periodTxs: Transaction[], period: Period
   let keys: { key: string; label: string }[]
   let bucketOf: (occurredOn: string) => string
   if (period === 'tudo') {
-    const months = saidas.map((t) => t.occurred_on.slice(0, 7)).sort()
-    const startM = months[0] ?? today.slice(0, 7)
-    keys = monthRange(startM, today.slice(0, 7)).map((m) => ({
-      key: m,
-      label: `${MONTHS_ABBR[Number(m.slice(5, 7)) - 1]}/${m.slice(2, 4)}`,
-    }))
-    bucketOf = (on) => on.slice(0, 7)
+    const dates = saidas.map((t) => t.occurred_on).sort()
+    const startD = dates[0] ?? today
+    const spanDays =
+      Math.round((new Date(today + 'T00:00:00').getTime() - new Date(startD + 'T00:00:00').getTime()) / 86400000) + 1
+    if (spanDays <= 92) {
+      // histórico curto: dia a dia (senão o "tudo" cairia num mês só → 1 ponto, sem linha)
+      keys = dayRange(startD, today).map((d) => ({ key: d, label: brDate(d) }))
+      bucketOf = (on) => on
+    } else {
+      // histórico longo: mês a mês
+      keys = monthRange(startD.slice(0, 7), today.slice(0, 7)).map((m) => ({
+        key: m,
+        label: `${MONTHS_ABBR[Number(m.slice(5, 7)) - 1]}/${m.slice(2, 4)}`,
+      }))
+      bucketOf = (on) => on.slice(0, 7)
+    }
   } else {
     let start = today
     let end = today
