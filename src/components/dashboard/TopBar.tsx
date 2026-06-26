@@ -7,6 +7,7 @@ type Props = {
   handle: string
   profile: Profile | null
   showCaret: boolean
+  canReorder: boolean
   onSettings: () => void
   onCustomize: () => void
   onAccount: () => void
@@ -16,7 +17,7 @@ type Props = {
 }
 
 /** cabeçalho: marca, bio do perfil e o menu (≡) com as ações do app */
-export function TopBar({ handle, profile, showCaret, onSettings, onCustomize, onAccount, onExport, onAbout, onSignOut }: Props) {
+export function TopBar({ handle, profile, showCaret, canReorder, onSettings, onCustomize, onAccount, onExport, onAbout, onSignOut }: Props) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   useDismissable(open, ref, () => setOpen(false))
@@ -60,9 +61,11 @@ export function TopBar({ handle, profile, showCaret, onSettings, onCustomize, on
             <button className="menu-item" role="menuitem" onClick={pick(onSettings)}>
               <Icon name="settings" className="menu-ico" /> configurações
             </button>
-            <button className="menu-item" role="menuitem" onClick={pick(onCustomize)}>
-              <Icon name="layout" className="menu-ico" /> customização
-            </button>
+            {canReorder && (
+              <button className="menu-item" role="menuitem" onClick={pick(onCustomize)}>
+                <Icon name="layout" className="menu-ico" /> customização
+              </button>
+            )}
             <button className="menu-item" role="menuitem" onClick={pick(onAccount)}>
               <Icon name="user" className="menu-ico" /> minha conta
             </button>

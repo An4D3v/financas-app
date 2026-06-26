@@ -15,6 +15,7 @@ export function Settings({
   profession: initProfession,
   hobbies: initHobbies,
   theme,
+  caret,
   onPreview,
   onClose,
   onSave,
@@ -23,13 +24,15 @@ export function Settings({
   profession: string
   hobbies: string[]
   theme: ThemePref
+  caret: boolean
   onPreview: (t: ThemePref) => void
   onClose: () => void
-  onSave: (data: { profession: string; hobbies: string[]; theme: ThemePref }) => Promise<void>
+  onSave: (data: { profession: string; hobbies: string[]; theme: ThemePref; caret: boolean }) => Promise<void>
 }) {
   const [profession, setProfession] = useState(initProfession)
   const [hobbies, setHobbies] = useState<string[]>(initHobbies)
   const [themeDraft, setThemeDraft] = useState(theme)
+  const [caretDraft, setCaretDraft] = useState(caret)
   const [draft, setDraft] = useState('')
   const [saving, setSaving] = useState(false)
   const full = hobbies.length >= MAX_HOBBIES
@@ -50,7 +53,7 @@ export function Settings({
   }
   async function save() {
     setSaving(true)
-    await onSave({ profession: profession.trim(), hobbies, theme: themeDraft })
+    await onSave({ profession: profession.trim(), hobbies, theme: themeDraft, caret: caretDraft })
     setSaving(false)
   }
 
@@ -81,6 +84,23 @@ export function Settings({
                 <Icon name={t.icon} /> {t.label}
               </button>
             ))}
+          </div>
+        </div>
+
+        <div className="set-section">
+          <span className="set-label">// cursor piscando</span>
+          <div className="switch-row">
+            <span className="muted small">o bloco verde que pisca na marca do topo</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={caretDraft}
+              aria-label="cursor piscando"
+              className={'switch' + (caretDraft ? ' on' : '')}
+              onClick={() => setCaretDraft((v) => !v)}
+            >
+              <span className="knob" />
+            </button>
           </div>
         </div>
 

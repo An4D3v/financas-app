@@ -31,6 +31,7 @@ import { TxModal } from '../TxModal'
 import { ScrollTopButton } from '../ScrollTopButton'
 import { Customize } from '../Customize'
 import { loadOrder, loadCaret, saveOrder, saveCaret, type BlockKey } from '../../lib/customization'
+import { useMediaQuery } from '../../hooks/useMediaQuery'
 
 export function Dashboard({ session }: { session: Session }) {
   const username =
@@ -62,6 +63,9 @@ export function Dashboard({ session }: { session: Session }) {
   // customização do layout (salva neste aparelho)
   const [caret, setCaret] = useState(loadCaret())
   const [order, setOrder] = useState<BlockKey[]>(loadOrder())
+
+  // reordenar seções só faz sentido no empilhado do celular; no desktop o layout é fixo (2-col)
+  const isMobile = useMediaQuery('(max-width: 680px)')
 
   // trava o scroll do fundo enquanto um modal está aberto (menu/calendário são popovers, não travam)
   useEffect(() => {
@@ -161,6 +165,7 @@ export function Dashboard({ session }: { session: Session }) {
         handle={handle}
         profile={profile}
         showCaret={caret}
+        canReorder={isMobile}
         onSettings={() => setShowSettings(true)}
         onCustomize={() => setShowCustomize(true)}
         onAccount={() => setShowAccount(true)}
@@ -183,7 +188,19 @@ export function Dashboard({ session }: { session: Session }) {
         }}
       />
 
-      {order.map(renderBlock)}
+      {isMobile ? (
+        order.map(renderBlock)
+      ) : (
+        <>
+          {renderBlock('kpis')}
+          <div className="grid2">
+            {renderBlock('entry')}
+            {renderBlock('chart')}
+          </div>
+          {renderBlock('summary')}
+          {renderBlock('txs')}
+        </>
+      )}
 
       {reviewData && (
         <ScanReview
@@ -205,13 +222,16 @@ export function Dashboard({ session }: { session: Session }) {
           profession={profile?.profession ?? ''}
           hobbies={profile?.hobbies ?? []}
           theme={theme}
+          caret={caret}
           onPreview={previewTheme}
           onClose={() => {
             previewTheme(theme) // descarta o preview, volta ao tema salvo
             setShowSettings(false)
           }}
           onSave={async (data) => {
-            if (await saveProfile(data)) {
+            setCaret(data.caret)
+            saveCaret(data.caret)
+            if (await saveProfile({ profession: data.profession, hobbies: data.hobbies, theme: data.theme })) {
               setTheme(data.theme)
               applyTheme(data.theme)
               setShowSettings(false)
@@ -235,12 +255,9 @@ export function Dashboard({ session }: { session: Session }) {
 
       {showCustomize && (
         <Customize
-          caret={caret}
           order={order}
           onClose={() => setShowCustomize(false)}
-          onSave={({ caret: c, order: o }) => {
-            setCaret(c)
-            saveCaret(c)
+          onSave={(o) => {
             setOrder(o)
             saveOrder(o)
             setShowCustomize(false)

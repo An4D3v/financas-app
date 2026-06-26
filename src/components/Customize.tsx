@@ -3,17 +3,14 @@ import { Icon } from './Icon'
 import { BLOCK_LABELS, DEFAULT_ORDER, type BlockKey } from '../lib/customization'
 
 export function Customize({
-  caret,
   order,
   onClose,
   onSave,
 }: {
-  caret: boolean
   order: BlockKey[]
   onClose: () => void
-  onSave: (data: { caret: boolean; order: BlockKey[] }) => void
+  onSave: (order: BlockKey[]) => void
 }) {
-  const [caretDraft, setCaretDraft] = useState(caret)
   const [orderDraft, setOrderDraft] = useState<BlockKey[]>(order)
 
   function move(i: number, dir: -1 | 1) {
@@ -33,24 +30,7 @@ export function Customize({
             ×
           </button>
         </div>
-        <p className="muted small">deixa o painel com a sua cara — fica salvo neste aparelho.</p>
-
-        <div className="set-section">
-          <span className="set-label">// cursor piscando</span>
-          <div className="switch-row">
-            <span className="muted small">o bloco verde que pisca na marca do topo</span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={caretDraft}
-              aria-label="cursor piscando"
-              className={'switch' + (caretDraft ? ' on' : '')}
-              onClick={() => setCaretDraft((v) => !v)}
-            >
-              <span className="knob" />
-            </button>
-          </div>
-        </div>
+        <p className="muted small">arraste a ordem das seções com as setas — fica salvo neste aparelho.</p>
 
         <div className="set-section">
           <span className="set-label">// ordem das seções</span>
@@ -94,7 +74,7 @@ export function Customize({
             </button>
             <button
               className="btn primary"
-              onClick={() => onSave({ caret: caretDraft, order: orderDraft })}
+              onClick={() => onSave(orderDraft)}
               title="salvar"
               aria-label="salvar"
             >
