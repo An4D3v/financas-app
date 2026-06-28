@@ -5,7 +5,8 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { applyTheme, type ThemePref } from '../lib/theme'
-import type { Budget, Category, Profile, ReviewRow, Transaction, TxPatch } from '../types'
+import { todayStr } from '../lib/format'
+import type { Budget, Category, Profile, Recurring, ReviewRow, Transaction, TxPatch } from '../types'
 
 export type NewTx = {
   occurred_on: string
@@ -15,15 +16,59 @@ export type NewTx = {
   category_id: string | null
 }
 
+export type NewRecurring = {
+  description: string
+  amount: number
+  type: 'entrada' | 'saida'
+  category_id: string | null
+  day_of_month: number
+}
+
+/** cria os lançamentos das contas fixas vencidas no mês corrente (idempotente via last_generated) */
+async function generateDueRecurring(list: Recurring[]): Promise<number> {
+  const today = todayStr()
+  const ym = today.slice(0, 7)
+  const toInsert: {
+    occurred_on: string
+    type: 'entrada' | 'saida'
+    description: string
+    amount: number
+    category_id: string | null
+    source: 'recorrente'
+  }[] = []
+  const updates: { id: string; target: string }[] = []
+  for (const r of list) {
+    if (!r.active) continue
+    const target = `${ym}-${String(r.day_of_month).padStart(2, '0')}`
+    if (today < target) continue // o dia ainda não chegou neste mês
+    if (r.last_generated && r.last_generated >= target) continue // já gerou este mês
+    toInsert.push({
+      occurred_on: target,
+      type: r.type,
+      description: r.description,
+      amount: r.amount,
+      category_id: r.category_id,
+      source: 'recorrente',
+    })
+    updates.push({ id: r.id, target })
+  }
+  if (!toInsert.length) return 0
+  const { error } = await supabase.from('transactions').insert(toInsert)
+  if (error) return 0
+  for (const u of updates) await supabase.from('recurring').update({ last_generated: u.target }).eq('id', u.id)
+  return toInsert.length
+}
+
 export function useFinanceData(session: Session) {
   const [cats, setCats] = useState<Category[]>([])
   const [txs, setTxs] = useState<Transaction[]>([])
   const [profile, setProfile] = useState<Profile | null>(null)
   const [budgets, setBudgets] = useState<Budget[]>([])
+  const [recurring, setRecurring] = useState<Recurring[]>([])
   const [loading, setLoading] = useState(true)
 
   const reload = useCallback(async () => {
-    const [catsRes, txRes, profRes, budgetsRes] = await Promise.all([
+    const [catsRes, txRes, profRes, budgetsRes, recRes] = await Promise.all([
       supabase.from('categories').select('*').order('name'),
       supabase
         .from('transactions')
@@ -32,6 +77,7 @@ export function useFinanceData(session: Session) {
         .order('created_at', { ascending: false }),
       supabase.from('profiles').select('*').maybeSingle(),
       supabase.from('budgets').select('*, categories(name, color)'),
+      supabase.from('recurring').select('*').order('day_of_month'),
     ])
     // nomes de categoria sempre em minúsculo (combina com a estética do app)
     const rawCats = (catsRes.data as Category[]) ?? []
@@ -48,14 +94,25 @@ export function useFinanceData(session: Session) {
         b.categories ? { ...b, categories: { ...b.categories, name: b.categories.name.toLowerCase() } } : b,
       ),
     )
+    const recList = (recRes.data as Recurring[]) ?? []
+    setRecurring(recList)
     const prof = (profRes.data as Profile | null) ?? null
     setProfile(prof)
     if (prof?.theme) applyTheme(prof.theme)
     setLoading(false)
+    return { recurring: recList }
   }, [])
 
   useEffect(() => {
-    reload()
+    let alive = true
+    reload().then(async (data) => {
+      if (!alive || !data) return
+      const n = await generateDueRecurring(data.recurring)
+      if (alive && n > 0) reload() // recarrega p/ mostrar as contas fixas recém-criadas
+    })
+    return () => {
+      alive = false
+    }
   }, [reload])
 
   /** insere um lançamento manual; devolve a mensagem de erro ou null */
@@ -158,5 +215,44 @@ export function useFinanceData(session: Session) {
     return true
   }
 
-  return { cats, txs, profile, budgets, loading, reload, addTx, insertScanned, delTx, updateTx, saveProfile, saveBudgets }
+  /** cria uma conta fixa; já materializa o lançamento deste mês se o dia já passou */
+  async function addRecurring(data: NewRecurring): Promise<string | null> {
+    const { error } = await supabase.from('recurring').insert({ ...data, user_id: session.user.id })
+    if (error) return error.message
+    const res = await reload()
+    if (res) {
+      const n = await generateDueRecurring(res.recurring)
+      if (n > 0) await reload()
+    }
+    return null
+  }
+
+  async function setRecurringActive(id: string, active: boolean) {
+    await supabase.from('recurring').update({ active }).eq('id', id)
+    await reload()
+  }
+
+  async function delRecurring(id: string) {
+    await supabase.from('recurring').delete().eq('id', id)
+    await reload()
+  }
+
+  return {
+    cats,
+    txs,
+    profile,
+    budgets,
+    recurring,
+    loading,
+    reload,
+    addTx,
+    insertScanned,
+    delTx,
+    updateTx,
+    saveProfile,
+    saveBudgets,
+    addRecurring,
+    setRecurringActive,
+    delRecurring,
+  }
 }

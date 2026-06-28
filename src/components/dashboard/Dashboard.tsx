@@ -33,6 +33,7 @@ import { TxModal } from '../TxModal'
 import { ScrollTopButton } from '../ScrollTopButton'
 import { Customize } from '../Customize'
 import { BudgetModal } from '../BudgetModal'
+import { RecurringModal } from '../RecurringModal'
 import { loadOrder, loadCaret, saveOrder, saveCaret, type BlockKey } from '../../lib/customization'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 
@@ -41,8 +42,23 @@ export function Dashboard({ session }: { session: Session }) {
     (session.user.user_metadata?.username as string | undefined) ?? session.user.email?.split('@')[0] ?? ''
   const handle = toHandle(username)
 
-  const { cats, txs, profile, budgets, loading, addTx, insertScanned, delTx, updateTx, saveProfile, saveBudgets } =
-    useFinanceData(session)
+  const {
+    cats,
+    txs,
+    profile,
+    budgets,
+    recurring,
+    loading,
+    addTx,
+    insertScanned,
+    delTx,
+    updateTx,
+    saveProfile,
+    saveBudgets,
+    addRecurring,
+    setRecurringActive,
+    delRecurring,
+  } = useFinanceData(session)
 
   // filtros
   const [period, setPeriod] = useState<Period>('mes')
@@ -64,6 +80,7 @@ export function Dashboard({ session }: { session: Session }) {
   const [showAll, setShowAll] = useState(false)
   const [showCustomize, setShowCustomize] = useState(false)
   const [showBudget, setShowBudget] = useState(false)
+  const [showRecurring, setShowRecurring] = useState(false)
 
   // customização do layout (salva neste aparelho)
   const [caret, setCaret] = useState(loadCaret())
@@ -74,13 +91,14 @@ export function Dashboard({ session }: { session: Session }) {
 
   // trava o scroll do fundo enquanto um modal está aberto (menu/calendário são popovers, não travam)
   useEffect(() => {
-    const open = !!reviewData || showSettings || showAccount || showAbout || showAll || showCustomize || showBudget
+    const open =
+      !!reviewData || showSettings || showAccount || showAbout || showAll || showCustomize || showBudget || showRecurring
     if (!open) return
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = ''
     }
-  }, [reviewData, showSettings, showAccount, showAbout, showAll, showCustomize, showBudget])
+  }, [reviewData, showSettings, showAccount, showAbout, showAll, showCustomize, showBudget, showRecurring])
 
   // derivados — lógica pura em lib/finance
   const periodTxs = useMemo(() => filterByPeriod(txs, period, customFrom, customTo), [txs, period, customFrom, customTo])
@@ -172,7 +190,14 @@ export function Dashboard({ session }: { session: Session }) {
   if (loading) return <div className="center muted">carregando seus dados...</div>
 
   const anyModal =
-    !!reviewData || showSettings || showAccount || showAbout || showAll || showCustomize || showBudget
+    !!reviewData ||
+    showSettings ||
+    showAccount ||
+    showAbout ||
+    showAll ||
+    showCustomize ||
+    showBudget ||
+    showRecurring
 
   return (
     <div className="app">
@@ -184,6 +209,7 @@ export function Dashboard({ session }: { session: Session }) {
         onSettings={() => setShowSettings(true)}
         onCustomize={() => setShowCustomize(true)}
         onBudget={() => setShowBudget(true)}
+        onRecurring={() => setShowRecurring(true)}
         onAccount={() => setShowAccount(true)}
         onExport={exportCSV}
         onAbout={() => setShowAbout(true)}
@@ -278,6 +304,17 @@ export function Dashboard({ session }: { session: Session }) {
           usedCategoryIds={usedCategoryIds}
           onClose={() => setShowBudget(false)}
           onSave={saveBudgets}
+        />
+      )}
+
+      {showRecurring && (
+        <RecurringModal
+          cats={cats}
+          recurring={recurring}
+          onAdd={addRecurring}
+          onToggle={setRecurringActive}
+          onDelete={delRecurring}
+          onClose={() => setShowRecurring(false)}
         />
       )}
 

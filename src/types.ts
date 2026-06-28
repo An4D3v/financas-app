@@ -32,6 +32,18 @@ export type Budget = {
   categories?: { name: string; color: string | null } | null
 }
 
+/** conta fixa: um lançamento que se repete todo mês */
+export type Recurring = {
+  id: string
+  description: string
+  amount: number
+  type: 'entrada' | 'saida'
+  category_id: string | null
+  day_of_month: number
+  active: boolean
+  last_generated: string | null
+}
+
 /** uma linha do modal de revisão da nota escaneada */
 export type ReviewRow = { description: string; value: string; categoryId: string; type: 'entrada' | 'saida' }
 

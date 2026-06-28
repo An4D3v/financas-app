@@ -11,6 +11,7 @@ type Props = {
   onSettings: () => void
   onCustomize: () => void
   onBudget: () => void
+  onRecurring: () => void
   onAccount: () => void
   onExport: () => void
   onAbout: () => void
@@ -18,7 +19,7 @@ type Props = {
 }
 
 /** cabeçalho: marca, bio do perfil e o menu (≡) com as ações do app */
-export function TopBar({ handle, profile, showCaret, canReorder, onSettings, onCustomize, onBudget, onAccount, onExport, onAbout, onSignOut }: Props) {
+export function TopBar({ handle, profile, showCaret, canReorder, onSettings, onCustomize, onBudget, onRecurring, onAccount, onExport, onAbout, onSignOut }: Props) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   useDismissable(open, ref, () => setOpen(false))
@@ -69,6 +70,9 @@ export function TopBar({ handle, profile, showCaret, canReorder, onSettings, onC
             )}
             <button className="menu-item" role="menuitem" onClick={pick(onBudget)}>
               <Icon name="wallet" className="menu-ico" /> metas
+            </button>
+            <button className="menu-item" role="menuitem" onClick={pick(onRecurring)}>
+              <Icon name="repeat" className="menu-ico" /> contas fixas
             </button>
             <button className="menu-item" role="menuitem" onClick={pick(onAccount)}>
               <Icon name="user" className="menu-ico" /> minha conta
