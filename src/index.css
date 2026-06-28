@@ -15,12 +15,13 @@
   --panel: #ffffff;
   --line: #d0d7de;
   --txt: #1f2328;
-  --muted: #59636e;
-  --green: #1a7f37;
-  --cyan: #0550ae;
-  --pink: #bf3989;
-  --yellow: #9a6700;
-  --red: #cf222e;
+  --muted: #4b5563;
+  /* tons mais escuros/profundos: no claro, cor escura contrasta melhor que neon (que "lava" no branco) */
+  --green: #166534;
+  --cyan: #155e75;
+  --pink: #9d174d;
+  --yellow: #854d0e;
+  --red: #b42318;
 }
 /* botoes/chips com fundo de cor solida pedem texto branco no claro */
 :root[data-theme="light"] .btn.primary,
