@@ -335,8 +335,15 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 .switch.sm .knob { width: 14px; height: 14px; }
 .switch.sm.on .knob { transform: translateX(14px); }
 
-/* selinho 🔁 de conta fixa na lista de lançamentos */
-.rec-badge { color: var(--cyan); font-size: 11px; margin: 0 3px 0 6px; }
+/* interruptor 🔁 de conta fixa em cada lançamento (cinza apagado = não; ciano = sim) */
+.rec-toggle {
+  display: inline-flex; align-items: center; vertical-align: -0.15em;
+  background: none; border: none; padding: 0; margin: 0 3px 0 6px; cursor: pointer; line-height: 1;
+  font-size: 11px; color: var(--muted); opacity: 0.45;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+.rec-toggle:hover { opacity: 1; color: var(--cyan); }
+.rec-toggle.on { color: var(--cyan); opacity: 1; }
 
 /* prévia do valor digitado, já com centavos (ex.: "= R$ 50,00") */
 .val-preview { display: block; text-align: right; font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: var(--muted); margin-top: -4px; }

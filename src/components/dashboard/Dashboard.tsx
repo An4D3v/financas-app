@@ -62,6 +62,7 @@ export function Dashboard({ session }: { session: Session }) {
     updateRecurring,
     delRecurring,
     restoreRecurring,
+    toggleTxRecurring,
   } = useFinanceData(session)
 
   // filtros
@@ -175,6 +176,7 @@ export function Dashboard({ session }: { session: Session }) {
             onCatFilter={setCatFilter}
             onDelete={onDeleteTx}
             onUpdate={updateTx}
+            onToggleRecurring={toggleTxRecurring}
             onShowAll={() => setShowAll(true)}
           />
         )
@@ -351,7 +353,7 @@ export function Dashboard({ session }: { session: Session }) {
       )}
 
       {showAll && (
-        <TxModal txs={listTxs} cats={cats} onDelete={onDeleteTx} onUpdate={updateTx} onClose={() => setShowAll(false)} />
+        <TxModal txs={listTxs} cats={cats} onDelete={onDeleteTx} onUpdate={updateTx} onToggleRecurring={toggleTxRecurring} onClose={() => setShowAll(false)} />
       )}
 
       {!anyModal && <ScrollTopButton />}

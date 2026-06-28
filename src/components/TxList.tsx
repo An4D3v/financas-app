@@ -10,11 +10,13 @@ function TxRow({
   cats,
   onDelete,
   onUpdate,
+  onToggleRecurring,
 }: {
   tx: Transaction
   cats: Category[]
   onDelete: (id: string) => void
   onUpdate: (id: string, patch: TxPatch) => void
+  onToggleRecurring: (tx: Transaction) => void
 }) {
   const [edit, setEdit] = useState<Field>(null)
   const [draft, setDraft] = useState('')
@@ -79,11 +81,15 @@ function TxRow({
             {tx.description}
           </span>
         )}
-        {tx.source === 'recorrente' && (
-          <span className="rec-badge" title="conta fixa">
-            <Icon name="repeat" />
-          </span>
-        )}{' '}
+        <button
+          type="button"
+          className={'rec-toggle' + (tx.recurring_id ? ' on' : '')}
+          title={tx.recurring_id ? 'conta fixa — clique p/ desativar' : 'tornar conta fixa (repete todo mês)'}
+          aria-pressed={!!tx.recurring_id}
+          onClick={() => onToggleRecurring(tx)}
+        >
+          <Icon name="repeat" />
+        </button>{' '}
         {edit === 'cat' ? (
           <select
             className="tx-edit tx-edit-cat"
@@ -150,16 +156,18 @@ export function TxList({
   cats,
   onDelete,
   onUpdate,
+  onToggleRecurring,
 }: {
   txs: Transaction[]
   cats: Category[]
   onDelete: (id: string) => void
   onUpdate: (id: string, patch: TxPatch) => void
+  onToggleRecurring: (tx: Transaction) => void
 }) {
   return (
     <ul className="txs">
       {txs.map((t) => (
-        <TxRow key={t.id} tx={t} cats={cats} onDelete={onDelete} onUpdate={onUpdate} />
+        <TxRow key={t.id} tx={t} cats={cats} onDelete={onDelete} onUpdate={onUpdate} onToggleRecurring={onToggleRecurring} />
       ))}
     </ul>
   )

@@ -324,6 +324,50 @@ export function useFinanceData(session: Session) {
     await reload()
   }
 
+  /** liga/desliga "conta fixa" direto no lançamento: cria ou remove a regra recorrente */
+  async function toggleTxRecurring(tx: Transaction) {
+    if (tx.recurring_id) {
+      // desliga: apaga a regra (os lançamentos se desvinculam via "on delete set null")
+      setTxs((prev) => prev.map((t) => (t.recurring_id === tx.recurring_id ? { ...t, recurring_id: null } : t)))
+      setRecurring((prev) => prev.filter((r) => r.id !== tx.recurring_id))
+      await supabase.from('recurring').delete().eq('id', tx.recurring_id)
+    } else {
+      // se já existe uma conta fixa igual (mesma descrição+tipo), só vincula — não duplica
+      const existing = recurring.find((r) => r.description === tx.description && r.type === tx.type)
+      if (existing) {
+        setTxs((prev) => prev.map((t) => (t.id === tx.id ? { ...t, recurring_id: existing.id } : t)))
+        await supabase.from('transactions').update({ recurring_id: existing.id }).eq('id', tx.id)
+        return
+      }
+      // liga: cria uma conta fixa a partir deste lançamento
+      const day = Math.min(28, Math.max(1, Number(tx.occurred_on.slice(8, 10)) || 1))
+      const { data, error } = await supabase
+        .from('recurring')
+        .insert({
+          user_id: session.user.id,
+          description: tx.description,
+          amount: tx.amount,
+          type: tx.type,
+          category_id: tx.category_id,
+          day_of_month: day,
+          last_generated: tx.occurred_on, // não regera o mês deste lançamento
+        })
+        .select('id')
+        .single()
+      if (error || !data) {
+        alert(error?.message ?? 'erro ao criar conta fixa')
+        return
+      }
+      setTxs((prev) => prev.map((t) => (t.id === tx.id ? { ...t, recurring_id: data.id } : t)))
+      await supabase.from('transactions').update({ recurring_id: data.id }).eq('id', tx.id)
+      const res = await reload()
+      if (res) {
+        const n = await generateDueRecurring(res.recurring) // se for um lançamento antigo, materializa o mês atual
+        if (n > 0) await reload()
+      }
+    }
+  }
+
   return {
     cats,
     txs,
@@ -343,5 +387,6 @@ export function useFinanceData(session: Session) {
     updateRecurring,
     delRecurring,
     restoreRecurring,
+    toggleTxRecurring,
   }
 }

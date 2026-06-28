@@ -8,11 +8,12 @@ type Props = {
   onCatFilter: (id: string) => void
   onDelete: (id: string) => void
   onUpdate: (id: string, patch: TxPatch) => void
+  onToggleRecurring: (tx: Transaction) => void
   onShowAll: () => void
 }
 
 /** card de lançamentos: filtro por categoria, lista (até 10) e botão "ver mais" */
-export function TransactionsCard({ txs, cats, catFilter, onCatFilter, onDelete, onUpdate, onShowAll }: Props) {
+export function TransactionsCard({ txs, cats, catFilter, onCatFilter, onDelete, onUpdate, onToggleRecurring, onShowAll }: Props) {
   const extra = txs.length - 10
 
   return (
@@ -29,7 +30,7 @@ export function TransactionsCard({ txs, cats, catFilter, onCatFilter, onDelete, 
         </select>
       </div>
       {txs.length === 0 && <p className="muted small">nenhum lançamento nesse filtro.</p>}
-      <TxList txs={txs.slice(0, 10)} cats={cats} onDelete={onDelete} onUpdate={onUpdate} />
+      <TxList txs={txs.slice(0, 10)} cats={cats} onDelete={onDelete} onUpdate={onUpdate} onToggleRecurring={onToggleRecurring} />
       {extra > 0 && (
         <button type="button" className="btn ver-mais" onClick={onShowAll}>
           ver mais {extra} lançamento{extra > 1 ? 's' : ''} →

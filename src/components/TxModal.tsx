@@ -8,12 +8,14 @@ export function TxModal({
   cats,
   onDelete,
   onUpdate,
+  onToggleRecurring,
   onClose,
 }: {
   txs: Transaction[]
   cats: Category[]
   onDelete: (id: string) => void
   onUpdate: (id: string, patch: TxPatch) => void
+  onToggleRecurring: (tx: Transaction) => void
   onClose: () => void
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -30,7 +32,7 @@ export function TxModal({
           </button>
         </div>
         <div className="tx-scroll" ref={scrollRef}>
-          <TxList txs={txs} cats={cats} onDelete={onDelete} onUpdate={onUpdate} />
+          <TxList txs={txs} cats={cats} onDelete={onDelete} onUpdate={onUpdate} onToggleRecurring={onToggleRecurring} />
         </div>
         <ScrollTopButton target={scrollRef} className="in-modal" />
       </div>
