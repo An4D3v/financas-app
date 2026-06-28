@@ -34,6 +34,12 @@
 :root[data-theme="light"] .tx .dot,
 :root[data-theme="light"] .rank-dot,
 :root[data-theme="light"] .rank-fill { filter: brightness(0.65) saturate(1.3); }
+/* mesma lógica nos gráficos (recharts): escurece fatias/barras/linhas/pontos no claro */
+:root[data-theme="light"] .recharts-sector,
+:root[data-theme="light"] .recharts-rectangle,
+:root[data-theme="light"] .recharts-line-curve,
+:root[data-theme="light"] .recharts-dot,
+:root[data-theme="light"] .recharts-active-dot { filter: brightness(0.65) saturate(1.3); }
 html { transition: background 0.15s ease; }
 * { box-sizing: border-box; }
 .icon { width: 1em; height: 1em; flex: none; vertical-align: -0.14em; }
