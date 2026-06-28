@@ -302,11 +302,13 @@ export function useFinanceData(session: Session) {
 
   async function delRecurring(id: string) {
     setRecurring((prev) => prev.filter((r) => r.id !== id))
+    // desvincula os lançamentos na hora (o 🔁 deles volta a ficar cinza)
+    setTxs((prev) => prev.map((t) => (t.recurring_id === id ? { ...t, recurring_id: null } : t)))
     await supabase.from('recurring').delete().eq('id', id)
   }
 
-  /** desfazer exclusão: reinsere a conta fixa preservando o id */
-  async function restoreRecurring(r: Recurring) {
+  /** desfazer exclusão: reinsere a conta fixa (mesmo id) e re-vincula os lançamentos que estavam ligados */
+  async function restoreRecurring(r: Recurring, linkedTxIds: string[] = []) {
     const { error } = await supabase.from('recurring').insert({
       id: r.id,
       description: r.description,
@@ -320,6 +322,9 @@ export function useFinanceData(session: Session) {
     if (error) {
       alert(error.message)
       return
+    }
+    if (linkedTxIds.length) {
+      await supabase.from('transactions').update({ recurring_id: r.id }).in('id', linkedTxIds)
     }
     await reload()
   }

@@ -138,15 +138,6 @@ function RecRow({
         </span>
       )}
 
-      <button
-        type="button"
-        className={'switch sm' + (r.active ? ' on' : '')}
-        onClick={() => onUpdate(r.id, { active: !r.active })}
-        title={r.active ? 'ativa — clique p/ pausar' : 'pausada — clique p/ ativar'}
-        aria-label="ativar ou pausar"
-      >
-        <span className="knob" />
-      </button>
       <button className="x" onClick={() => onDelete(r.id)} title="excluir">
         ×
       </button>

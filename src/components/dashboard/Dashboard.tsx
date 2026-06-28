@@ -137,8 +137,9 @@ export function Dashboard({ session }: { session: Session }) {
   }
   const onDeleteRecurring = (id: string) => {
     const removed = recurring.find((r) => r.id === id)
+    const linkedTxIds = txs.filter((t) => t.recurring_id === id).map((t) => t.id)
     delRecurring(id)
-    if (removed) undo.show('conta fixa excluída', () => restoreRecurring(removed))
+    if (removed) undo.show('conta fixa excluída', () => restoreRecurring(removed, linkedTxIds))
   }
 
   /** desenha cada seção do dashboard na ordem escolhida pelo usuário */
