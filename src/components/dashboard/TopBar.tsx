@@ -49,7 +49,7 @@ export function TopBar({ handle, profile, showCaret, canReorder, onSettings, onC
       </div>
       <div className="menu-wrap" ref={ref}>
         <button
-          className="icon-btn menu-btn"
+          className={'menu-btn' + (open ? ' open' : '')}
           title="menu"
           aria-label="menu"
           aria-haspopup="true"

@@ -393,7 +393,14 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
   border-radius: 9px; padding: 8px 11px; font-size: 16px; line-height: 1; cursor: pointer;
 }
 .icon-btn:hover { border-color: var(--cyan); }
-.menu-btn { font-size: 20px; padding: 5px 12px; }
+.menu-btn {
+  background: none; border: none; color: var(--txt); cursor: pointer;
+  font-size: 25px; line-height: 1; padding: 5px 9px; border-radius: 10px;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.15s ease, background 0.15s ease;
+}
+.menu-btn:hover { color: var(--cyan); background: var(--bg); }
+.menu-btn:active { transform: scale(0.86); }
+.menu-btn.open { transform: rotate(90deg); color: var(--cyan); }
 .menu {
   position: absolute; right: 0; top: calc(100% + 6px); z-index: 30;
   min-width: 186px; padding: 6px; display: flex; flex-direction: column; gap: 2px;
