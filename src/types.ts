@@ -22,6 +22,7 @@ export type Transaction = {
   category_id: string | null
   categories?: { name: string; color: string | null } | null
   source?: 'manual' | 'foto' | 'qrcode' | 'recorrente'
+  recurring_id?: string | null
   created_at: string
 }
 

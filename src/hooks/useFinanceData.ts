@@ -35,6 +35,7 @@ async function generateDueRecurring(list: Recurring[]): Promise<number> {
     amount: number
     category_id: string | null
     source: 'recorrente'
+    recurring_id: string
   }[] = []
   const updates: { id: string; target: string }[] = []
   for (const r of list) {
@@ -49,6 +50,7 @@ async function generateDueRecurring(list: Recurring[]): Promise<number> {
       amount: r.amount,
       category_id: r.category_id,
       source: 'recorrente',
+      recurring_id: r.id,
     })
     updates.push({ id: r.id, target })
   }
@@ -161,6 +163,7 @@ export function useFinanceData(session: Session) {
       amount: tx.amount,
       category_id: tx.category_id,
       source: tx.source ?? 'manual',
+      recurring_id: tx.recurring_id ?? null,
       created_at: tx.created_at,
     })
     if (error) {
@@ -170,8 +173,9 @@ export function useFinanceData(session: Session) {
     await reload()
   }
 
-  /** edição inline otimista; refaz a categoria embutida se ela mudou */
+  /** edição inline otimista; refaz a categoria embutida se ela mudou e espelha na conta fixa */
   async function updateTx(id: string, patch: TxPatch) {
+    const tx = txs.find((t) => t.id === id)
     setTxs((prev) =>
       prev.map((t) => {
         if (t.id !== id) return t
@@ -187,6 +191,19 @@ export function useFinanceData(session: Session) {
     if (error) {
       alert(error.message)
       reload() // reverte recarregando do banco
+      return
+    }
+    // se este lançamento veio de uma conta fixa, espelha a alteração na regra
+    if (tx?.recurring_id) {
+      const rp: Partial<NewRecurring> = {}
+      if (patch.description != null) rp.description = patch.description
+      if (patch.amount != null) rp.amount = patch.amount
+      if (patch.type != null) rp.type = patch.type
+      if ('category_id' in patch) rp.category_id = patch.category_id ?? null
+      if (Object.keys(rp).length) {
+        setRecurring((prev) => prev.map((r) => (r.id === tx.recurring_id ? { ...r, ...rp } : r)))
+        await supabase.from('recurring').update(rp).eq('id', tx.recurring_id)
+      }
     }
   }
 
@@ -246,13 +263,40 @@ export function useFinanceData(session: Session) {
     return null
   }
 
-  /** edição (otimista) de uma conta fixa: descrição, valor, tipo, categoria, dia ou ativa */
+  /** edição (otimista) de uma conta fixa: espelha no lançamento gerado do mês corrente */
   async function updateRecurring(id: string, patch: Partial<NewRecurring> & { active?: boolean }) {
     setRecurring((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)))
     const { error } = await supabase.from('recurring').update(patch).eq('id', id)
     if (error) {
       alert(error.message)
       reload()
+      return
+    }
+    const ym = todayStr().slice(0, 7)
+    const tp: Partial<Pick<Transaction, 'description' | 'amount' | 'type' | 'category_id' | 'occurred_on'>> = {}
+    if (patch.description != null) tp.description = patch.description
+    if (patch.amount != null) tp.amount = patch.amount
+    if (patch.type != null) tp.type = patch.type
+    if ('category_id' in patch) tp.category_id = patch.category_id ?? null
+    if (patch.day_of_month != null) tp.occurred_on = `${ym}-${String(patch.day_of_month).padStart(2, '0')}`
+    if (Object.keys(tp).length) {
+      setTxs((prev) =>
+        prev.map((t) => {
+          if (t.recurring_id !== id || t.occurred_on.slice(0, 7) !== ym) return t
+          const next = { ...t, ...tp }
+          if ('category_id' in tp) {
+            const c = cats.find((cc) => cc.id === tp.category_id)
+            next.categories = c ? { name: c.name, color: c.color } : null
+          }
+          return next
+        }),
+      )
+      await supabase
+        .from('transactions')
+        .update(tp)
+        .eq('recurring_id', id)
+        .gte('occurred_on', `${ym}-01`)
+        .lte('occurred_on', `${ym}-31`)
     }
   }
 
