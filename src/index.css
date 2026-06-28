@@ -336,7 +336,7 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 .switch.sm.on .knob { transform: translateX(14px); }
 
 /* selinho 🔁 de conta fixa na lista de lançamentos */
-.rec-badge { color: var(--cyan); font-size: 11px; }
+.rec-badge { color: var(--cyan); font-size: 11px; margin: 0 3px 0 6px; }
 
 /* toast de "desfazer" com barrinha de contagem */
 .toast {
