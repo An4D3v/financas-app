@@ -16,6 +16,7 @@ export function Settings({
   hobbies: initHobbies,
   theme,
   caret,
+  calc,
   showCaretToggle,
   onPreview,
   onClose,
@@ -26,15 +27,17 @@ export function Settings({
   hobbies: string[]
   theme: ThemePref
   caret: boolean
+  calc: boolean
   showCaretToggle: boolean
   onPreview: (t: ThemePref) => void
   onClose: () => void
-  onSave: (data: { profession: string; hobbies: string[]; theme: ThemePref; caret: boolean }) => Promise<void>
+  onSave: (data: { profession: string; hobbies: string[]; theme: ThemePref; caret: boolean; calc: boolean }) => Promise<void>
 }) {
   const [profession, setProfession] = useState(initProfession)
   const [hobbies, setHobbies] = useState<string[]>(initHobbies)
   const [themeDraft, setThemeDraft] = useState(theme)
   const [caretDraft, setCaretDraft] = useState(caret)
+  const [calcDraft, setCalcDraft] = useState(calc)
   const [draft, setDraft] = useState('')
   const [saving, setSaving] = useState(false)
   const full = hobbies.length >= MAX_HOBBIES
@@ -55,7 +58,7 @@ export function Settings({
   }
   async function save() {
     setSaving(true)
-    await onSave({ profession: profession.trim(), hobbies, theme: themeDraft, caret: caretDraft })
+    await onSave({ profession: profession.trim(), hobbies, theme: themeDraft, caret: caretDraft, calc: calcDraft })
     setSaving(false)
   }
 
@@ -90,22 +93,41 @@ export function Settings({
         </div>
 
         {showCaretToggle && (
-          <div className="set-section">
-            <span className="set-label">// cursor piscando</span>
-            <div className="switch-row">
-              <span className="muted small">o bloco verde que pisca na marca do topo</span>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={caretDraft}
-                aria-label="cursor piscando"
-                className={'switch' + (caretDraft ? ' on' : '')}
-                onClick={() => setCaretDraft((v) => !v)}
-              >
-                <span className="knob" />
-              </button>
+          <>
+            <div className="set-section">
+              <span className="set-label">// cursor piscando</span>
+              <div className="switch-row">
+                <span className="muted small">o bloco verde que pisca na marca do topo</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={caretDraft}
+                  aria-label="cursor piscando"
+                  className={'switch' + (caretDraft ? ' on' : '')}
+                  onClick={() => setCaretDraft((v) => !v)}
+                >
+                  <span className="knob" />
+                </button>
+              </div>
             </div>
-          </div>
+
+            <div className="set-section">
+              <span className="set-label">// calculadora flutuante</span>
+              <div className="switch-row">
+                <span className="muted small">botãozinho de calculadora no canto inferior</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={calcDraft}
+                  aria-label="calculadora flutuante"
+                  className={'switch' + (calcDraft ? ' on' : '')}
+                  onClick={() => setCalcDraft((v) => !v)}
+                >
+                  <span className="knob" />
+                </button>
+              </div>
+            </div>
+          </>
         )}
 
         <div className="set-section">

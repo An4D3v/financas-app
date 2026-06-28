@@ -4,16 +4,19 @@ import { BLOCK_LABELS, DEFAULT_ORDER, type BlockKey } from '../lib/customization
 
 export function Customize({
   caret,
+  calc,
   order,
   onClose,
   onSave,
 }: {
   caret: boolean
+  calc: boolean
   order: BlockKey[]
   onClose: () => void
-  onSave: (data: { caret: boolean; order: BlockKey[] }) => void
+  onSave: (data: { caret: boolean; calc: boolean; order: BlockKey[] }) => void
 }) {
   const [caretDraft, setCaretDraft] = useState(caret)
+  const [calcDraft, setCalcDraft] = useState(calc)
   const [orderDraft, setOrderDraft] = useState<BlockKey[]>(order)
 
   function move(i: number, dir: -1 | 1) {
@@ -46,6 +49,23 @@ export function Customize({
               aria-label="cursor piscando"
               className={'switch' + (caretDraft ? ' on' : '')}
               onClick={() => setCaretDraft((v) => !v)}
+            >
+              <span className="knob" />
+            </button>
+          </div>
+        </div>
+
+        <div className="set-section">
+          <span className="set-label">// calculadora flutuante</span>
+          <div className="switch-row">
+            <span className="muted small">botãozinho de calculadora no canto inferior</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={calcDraft}
+              aria-label="calculadora flutuante"
+              className={'switch' + (calcDraft ? ' on' : '')}
+              onClick={() => setCalcDraft((v) => !v)}
             >
               <span className="knob" />
             </button>
@@ -94,7 +114,7 @@ export function Customize({
             </button>
             <button
               className="btn primary"
-              onClick={() => onSave({ caret: caretDraft, order: orderDraft })}
+              onClick={() => onSave({ caret: caretDraft, calc: calcDraft, order: orderDraft })}
               title="salvar"
               aria-label="salvar"
             >

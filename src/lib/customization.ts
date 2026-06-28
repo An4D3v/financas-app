@@ -16,6 +16,7 @@ export const DEFAULT_ORDER: BlockKey[] = ['kpis', 'entry', 'chart', 'budget', 's
 
 const ORDER_KEY = 'fin-order'
 const CARET_KEY = 'fin-caret'
+const CALC_KEY = 'fin-calc'
 
 /** lê a ordem salva mantendo a preferência do usuário e anexando blocos novos no fim */
 export function loadOrder(): BlockKey[] {
@@ -52,6 +53,19 @@ export function loadCaret(): boolean {
 export function saveCaret(on: boolean) {
   try {
     localStorage.setItem(CARET_KEY, on ? 'on' : 'off')
+  } catch {
+    /* ignora */
+  }
+}
+
+/** calculadora flutuante ligada por padrão; só o valor 'off' desliga */
+export function loadCalc(): boolean {
+  return localStorage.getItem(CALC_KEY) !== 'off'
+}
+
+export function saveCalc(on: boolean) {
+  try {
+    localStorage.setItem(CALC_KEY, on ? 'on' : 'off')
   } catch {
     /* ignora */
   }

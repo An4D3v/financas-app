@@ -34,7 +34,8 @@ import { ScrollTopButton } from '../ScrollTopButton'
 import { Customize } from '../Customize'
 import { BudgetModal } from '../BudgetModal'
 import { RecurringModal } from '../RecurringModal'
-import { loadOrder, loadCaret, saveOrder, saveCaret, type BlockKey } from '../../lib/customization'
+import { loadOrder, loadCaret, loadCalc, saveOrder, saveCaret, saveCalc, type BlockKey } from '../../lib/customization'
+import { CalcWidget } from '../Calculator'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { useUndo } from '../../hooks/useUndo'
 import { Toast } from '../Toast'
@@ -89,6 +90,7 @@ export function Dashboard({ session }: { session: Session }) {
 
   // customização do layout (salva neste aparelho)
   const [caret, setCaret] = useState(loadCaret())
+  const [calc, setCalc] = useState(loadCalc())
   const [order, setOrder] = useState<BlockKey[]>(loadOrder())
 
   // reordenar seções só faz sentido no empilhado do celular; no desktop o layout é fixo (2-col)
@@ -286,6 +288,7 @@ export function Dashboard({ session }: { session: Session }) {
           hobbies={profile?.hobbies ?? []}
           theme={theme}
           caret={caret}
+          calc={calc}
           showCaretToggle={!isMobile}
           onPreview={previewTheme}
           onClose={() => {
@@ -295,6 +298,8 @@ export function Dashboard({ session }: { session: Session }) {
           onSave={async (data) => {
             setCaret(data.caret)
             saveCaret(data.caret)
+            setCalc(data.calc)
+            saveCalc(data.calc)
             if (await saveProfile({ profession: data.profession, hobbies: data.hobbies, theme: data.theme })) {
               setTheme(data.theme)
               applyTheme(data.theme)
@@ -341,11 +346,14 @@ export function Dashboard({ session }: { session: Session }) {
       {showCustomize && (
         <Customize
           caret={caret}
+          calc={calc}
           order={order}
           onClose={() => setShowCustomize(false)}
-          onSave={({ caret: c, order: o }) => {
+          onSave={({ caret: c, calc: cc, order: o }) => {
             setCaret(c)
             saveCaret(c)
+            setCalc(cc)
+            saveCalc(cc)
             setOrder(o)
             saveOrder(o)
             setShowCustomize(false)
@@ -358,6 +366,7 @@ export function Dashboard({ session }: { session: Session }) {
       )}
 
       {!anyModal && <ScrollTopButton />}
+      {calc && !anyModal && <CalcWidget />}
       {undo.pending && <Toast key={undo.pending.id} message={undo.pending.message} onUndo={undo.undo} />}
     </div>
   )
