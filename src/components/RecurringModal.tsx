@@ -1,5 +1,5 @@
 import { useState, type KeyboardEvent } from 'react'
-import { brl } from '../lib/format'
+import { brl, parseAmount, maskMoney } from '../lib/format'
 import { Icon } from './Icon'
 import type { Category, Recurring } from '../types'
 import type { NewRecurring } from '../hooks/useFinanceData'
@@ -218,8 +218,15 @@ export function RecurringModal({
               <option value="saida">saída</option>
               <option value="entrada">entrada</option>
             </select>
-            <input inputMode="decimal" placeholder="valor R$" value={amount} onChange={(e) => setAmount(e.target.value)} />
+            <input
+              inputMode="decimal"
+              placeholder="valor R$"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              onBlur={() => setAmount(maskMoney(amount))}
+            />
           </div>
+          {amount.trim() && <span className="val-preview">= {brl(parseAmount(amount))}</span>}
           <div className="row">
             <select value={catId} onChange={(e) => setCatId(e.target.value)}>
               <option value="">categoria...</option>

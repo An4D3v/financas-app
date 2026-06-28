@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { brl } from '../lib/format'
+import { brl, maskMoney } from '../lib/format'
 import { Icon } from './Icon'
 import type { Category, ReviewRow } from '../types'
 
@@ -18,7 +18,7 @@ export function ScanReview({
   onCancel: () => void
   onConfirm: (rows: ReviewRow[], date: string) => Promise<void>
 }) {
-  const [rows, setRows] = useState<ReviewRow[]>(items)
+  const [rows, setRows] = useState<ReviewRow[]>(() => items.map((r) => ({ ...r, value: maskMoney(r.value) })))
   const [d, setD] = useState(date)
   const [saving, setSaving] = useState(false)
 
@@ -84,13 +84,17 @@ export function ScanReview({
                   </option>
                 ))}
               </select>
-              <input
-                className="rev-val"
-                inputMode="decimal"
-                placeholder="0,00"
-                value={r.value}
-                onChange={(e) => update(i, { value: e.target.value })}
-              />
+              <div className="money rev-val">
+                <span className="money-pre">R$</span>
+                <input
+                  inputMode="decimal"
+                  placeholder="0,00"
+                  aria-label="valor"
+                  value={r.value}
+                  onChange={(e) => update(i, { value: e.target.value })}
+                  onBlur={() => update(i, { value: maskMoney(r.value) })}
+                />
+              </div>
               <button className="x" onClick={() => remove(i)} title="remover">
                 ×
               </button>

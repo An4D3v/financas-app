@@ -2,7 +2,7 @@ import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import type { Category } from '../../types'
 import type { NewTx } from '../../hooks/useFinanceData'
 import { scanReceipt, type ScanResult } from '../../lib/scan'
-import { todayStr } from '../../lib/format'
+import { todayStr, brl, parseAmount, maskMoney } from '../../lib/format'
 import { Icon } from '../Icon'
 
 type Props = {
@@ -92,8 +92,15 @@ export function EntryForm({ cats, onAdd, onScanned }: Props) {
               </option>
             ))}
           </select>
-          <input inputMode="decimal" placeholder="valor R$" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          <input
+            inputMode="decimal"
+            placeholder="valor R$"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            onBlur={() => setAmount(maskMoney(amount))}
+          />
         </div>
+        {amount.trim() && <span className="val-preview">= {brl(parseAmount(amount))}</span>}
         <button className="btn primary" disabled={saving}>
           {saving ? (
             '...'

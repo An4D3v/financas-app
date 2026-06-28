@@ -338,6 +338,16 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 /* selinho 🔁 de conta fixa na lista de lançamentos */
 .rec-badge { color: var(--cyan); font-size: 11px; margin: 0 3px 0 6px; }
 
+/* prévia do valor digitado, já com centavos (ex.: "= R$ 50,00") */
+.val-preview { display: block; text-align: right; font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: var(--muted); margin-top: -4px; }
+
+/* campo de dinheiro com prefixo "R$" (ex.: revisão da nota) */
+.money { display: flex; align-items: center; gap: 5px; min-width: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 9px; padding: 0 9px; }
+.money:focus-within { border-color: var(--cyan); }
+.money-pre { flex: none; font-size: 12px; color: var(--muted); }
+.money input { flex: 1; min-width: 0; border: none; background: none; padding: 10px 0; text-align: right; border-radius: 0; }
+.money input:focus { outline: none; }
+
 /* toast de "desfazer" com barrinha de contagem */
 .toast {
   position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 80;

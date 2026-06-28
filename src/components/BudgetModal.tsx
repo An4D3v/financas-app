@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Icon } from './Icon'
+import { maskMoney } from '../lib/format'
 import type { Budget, Category } from '../types'
 
 /** modal pra definir o teto mensal (meta) de cada categoria de gasto */
@@ -73,6 +74,7 @@ export function BudgetModal({
                   aria-label={'meta de ' + c.name}
                   value={drafts[c.id] ?? ''}
                   onChange={(e) => setDrafts((d) => ({ ...d, [c.id]: e.target.value }))}
+                  onBlur={() => setDrafts((d) => ({ ...d, [c.id]: maskMoney(d[c.id] ?? '') }))}
                 />
               </li>
             ))}

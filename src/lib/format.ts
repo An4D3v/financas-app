@@ -3,6 +3,18 @@
 /** formata número como moeda BRL: 1234.5 -> "R$ 1.234,50" */
 export const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
+/** converte um valor digitado ("50", "50,5", "50.5") em número (0 se inválido) */
+export const parseAmount = (raw: string) => Number(raw.replace(',', '.')) || 0
+
+/** normaliza o valor digitado para "X,XX" (ex.: "50" -> "50,00"); vazio continua vazio */
+export function maskMoney(raw: string): string {
+  const s = raw.trim()
+  if (!s) return ''
+  const n = Number(s.replace(',', '.'))
+  if (!Number.isFinite(n)) return raw // valor estranho: deixa como está p/ o usuário corrigir
+  return n.toFixed(2).replace('.', ',')
+}
+
 /** data de hoje em ISO curto (YYYY-MM-DD) */
 export const todayStr = () => new Date().toISOString().slice(0, 10)
 
