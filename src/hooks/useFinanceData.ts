@@ -41,7 +41,7 @@ async function generateDueRecurring(list: Recurring[]): Promise<number> {
     if (!r.active) continue
     const target = `${ym}-${String(r.day_of_month).padStart(2, '0')}`
     if (today < target) continue // o dia ainda não chegou neste mês
-    if (r.last_generated && r.last_generated >= target) continue // já gerou este mês
+    if (r.last_generated && r.last_generated.slice(0, 7) >= ym) continue // já gerou neste mês (mesmo se o dia mudou)
     toInsert.push({
       occurred_on: target,
       type: r.type,
@@ -151,6 +151,25 @@ export function useFinanceData(session: Session) {
     await supabase.from('transactions').delete().eq('id', id)
   }
 
+  /** desfazer exclusão: reinsere o lançamento preservando id e data */
+  async function restoreTx(tx: Transaction) {
+    const { error } = await supabase.from('transactions').insert({
+      id: tx.id,
+      occurred_on: tx.occurred_on,
+      type: tx.type,
+      description: tx.description,
+      amount: tx.amount,
+      category_id: tx.category_id,
+      source: tx.source ?? 'manual',
+      created_at: tx.created_at,
+    })
+    if (error) {
+      alert(error.message)
+      return
+    }
+    await reload()
+  }
+
   /** edição inline otimista; refaz a categoria embutida se ela mudou */
   async function updateTx(id: string, patch: TxPatch) {
     setTxs((prev) =>
@@ -227,13 +246,37 @@ export function useFinanceData(session: Session) {
     return null
   }
 
-  async function setRecurringActive(id: string, active: boolean) {
-    await supabase.from('recurring').update({ active }).eq('id', id)
-    await reload()
+  /** edição (otimista) de uma conta fixa: descrição, valor, tipo, categoria, dia ou ativa */
+  async function updateRecurring(id: string, patch: Partial<NewRecurring> & { active?: boolean }) {
+    setRecurring((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)))
+    const { error } = await supabase.from('recurring').update(patch).eq('id', id)
+    if (error) {
+      alert(error.message)
+      reload()
+    }
   }
 
   async function delRecurring(id: string) {
+    setRecurring((prev) => prev.filter((r) => r.id !== id))
     await supabase.from('recurring').delete().eq('id', id)
+  }
+
+  /** desfazer exclusão: reinsere a conta fixa preservando o id */
+  async function restoreRecurring(r: Recurring) {
+    const { error } = await supabase.from('recurring').insert({
+      id: r.id,
+      description: r.description,
+      amount: r.amount,
+      type: r.type,
+      category_id: r.category_id,
+      day_of_month: r.day_of_month,
+      active: r.active,
+      last_generated: r.last_generated,
+    })
+    if (error) {
+      alert(error.message)
+      return
+    }
     await reload()
   }
 
@@ -248,11 +291,13 @@ export function useFinanceData(session: Session) {
     addTx,
     insertScanned,
     delTx,
+    restoreTx,
     updateTx,
     saveProfile,
     saveBudgets,
     addRecurring,
-    setRecurringActive,
+    updateRecurring,
     delRecurring,
+    restoreRecurring,
   }
 }

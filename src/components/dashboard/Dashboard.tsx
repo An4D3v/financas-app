@@ -36,6 +36,8 @@ import { BudgetModal } from '../BudgetModal'
 import { RecurringModal } from '../RecurringModal'
 import { loadOrder, loadCaret, saveOrder, saveCaret, type BlockKey } from '../../lib/customization'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
+import { useUndo } from '../../hooks/useUndo'
+import { Toast } from '../Toast'
 
 export function Dashboard({ session }: { session: Session }) {
   const username =
@@ -52,12 +54,14 @@ export function Dashboard({ session }: { session: Session }) {
     addTx,
     insertScanned,
     delTx,
+    restoreTx,
     updateTx,
     saveProfile,
     saveBudgets,
     addRecurring,
-    setRecurringActive,
+    updateRecurring,
     delRecurring,
+    restoreRecurring,
   } = useFinanceData(session)
 
   // filtros
@@ -88,6 +92,7 @@ export function Dashboard({ session }: { session: Session }) {
 
   // reordenar seções só faz sentido no empilhado do celular; no desktop o layout é fixo (2-col)
   const isMobile = useMediaQuery('(max-width: 680px)')
+  const undo = useUndo()
 
   // trava o scroll do fundo enquanto um modal está aberto (menu/calendário são popovers, não travam)
   useEffect(() => {
@@ -123,6 +128,18 @@ export function Dashboard({ session }: { session: Session }) {
     [txs],
   )
 
+  // exclusões com opção de desfazer (toast)
+  const onDeleteTx = (id: string) => {
+    const removed = txs.find((t) => t.id === id)
+    delTx(id)
+    if (removed) undo.show('lançamento excluído', () => restoreTx(removed))
+  }
+  const onDeleteRecurring = (id: string) => {
+    const removed = recurring.find((r) => r.id === id)
+    delRecurring(id)
+    if (removed) undo.show('conta fixa excluída', () => restoreRecurring(removed))
+  }
+
   /** desenha cada seção do dashboard na ordem escolhida pelo usuário */
   const renderBlock = (key: BlockKey) => {
     switch (key) {
@@ -156,7 +173,7 @@ export function Dashboard({ session }: { session: Session }) {
             cats={cats}
             catFilter={catFilter}
             onCatFilter={setCatFilter}
-            onDelete={delTx}
+            onDelete={onDeleteTx}
             onUpdate={updateTx}
             onShowAll={() => setShowAll(true)}
           />
@@ -312,8 +329,8 @@ export function Dashboard({ session }: { session: Session }) {
           cats={cats}
           recurring={recurring}
           onAdd={addRecurring}
-          onToggle={setRecurringActive}
-          onDelete={delRecurring}
+          onUpdate={updateRecurring}
+          onDelete={onDeleteRecurring}
           onClose={() => setShowRecurring(false)}
         />
       )}
@@ -334,10 +351,11 @@ export function Dashboard({ session }: { session: Session }) {
       )}
 
       {showAll && (
-        <TxModal txs={listTxs} cats={cats} onDelete={delTx} onUpdate={updateTx} onClose={() => setShowAll(false)} />
+        <TxModal txs={listTxs} cats={cats} onDelete={onDeleteTx} onUpdate={updateTx} onClose={() => setShowAll(false)} />
       )}
 
       {!anyModal && <ScrollTopButton />}
+      {undo.pending && <Toast key={undo.pending.id} message={undo.pending.message} onUndo={undo.undo} />}
     </div>
   )
 }

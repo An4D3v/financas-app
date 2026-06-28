@@ -135,6 +135,12 @@ const ICONS = {
       <line x1="7" y1="7" x2="7.01" y2="7" />
     </>
   ),
+  undo: (
+    <>
+      <path d="M3 7v6h6" />
+      <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" />
+    </>
+  ),
   repeat: (
     <>
       <polyline points="17 1 21 5 17 9" />

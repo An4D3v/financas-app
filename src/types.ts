@@ -21,6 +21,7 @@ export type Transaction = {
   amount: number
   category_id: string | null
   categories?: { name: string; color: string | null } | null
+  source?: 'manual' | 'foto' | 'qrcode' | 'recorrente'
   created_at: string
 }
 

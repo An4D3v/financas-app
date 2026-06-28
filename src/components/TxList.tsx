@@ -1,5 +1,6 @@
 import { useState, type KeyboardEvent } from 'react'
 import { brl } from '../lib/format'
+import { Icon } from './Icon'
 import type { Category, Transaction, TxPatch } from '../types'
 
 type Field = 'date' | 'desc' | 'cat' | 'val' | null
@@ -76,6 +77,11 @@ function TxRow({
         ) : (
           <span className="editable" title="editar nome" onClick={() => start('desc', tx.description)}>
             {tx.description}
+          </span>
+        )}
+        {tx.source === 'recorrente' && (
+          <span className="rec-badge" title="conta fixa">
+            <Icon name="repeat" />
           </span>
         )}{' '}
         {edit === 'cat' ? (

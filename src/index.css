@@ -334,6 +334,30 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 .switch.sm { width: 34px; height: 20px; }
 .switch.sm .knob { width: 14px; height: 14px; }
 .switch.sm.on .knob { transform: translateX(14px); }
+
+/* selinho 🔁 de conta fixa na lista de lançamentos */
+.rec-badge { color: var(--cyan); font-size: 11px; }
+
+/* toast de "desfazer" com barrinha de contagem */
+.toast {
+  position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 80;
+  display: flex; align-items: center; gap: 14px; max-width: calc(100% - 24px); overflow: hidden;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 11px 15px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  animation: toastIn 0.2s ease-out;
+}
+@keyframes toastIn { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.toast-msg { font-size: 14px; }
+.toast-undo {
+  flex: none; background: none; border: none; color: var(--cyan); cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 5px; padding: 2px 4px;
+}
+.toast-bar {
+  position: absolute; left: 0; bottom: 0; height: 3px; width: 100%;
+  background: var(--cyan); transform-origin: left; animation: toastBar 5s linear forwards;
+}
+@keyframes toastBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 @media (max-width: 680px) {
   .kpis { grid-template-columns: 1fr; }
   .grid2 { grid-template-columns: 1fr; }
