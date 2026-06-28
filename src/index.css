@@ -81,6 +81,7 @@ body {
 .chart-body { flex: 1; min-height: 0; position: relative; }
 .chart-inner { position: absolute; inset: 0; overflow-y: auto; }
 .chart-inner.centered { display: flex; flex-direction: column; justify-content: center; }
+.chart-empty { text-align: center; width: 100%; }
 /* barra de rolagem personalizada — fina, ciano, some quando não está em uso */
 .chart-inner, .tx-scroll, .review-rows { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
 .chart-inner::-webkit-scrollbar, .tx-scroll::-webkit-scrollbar, .review-rows::-webkit-scrollbar { width: 6px; height: 6px; }

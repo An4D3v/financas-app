@@ -42,9 +42,9 @@ export function CategoryChart({ data, timeSeries, periodLabel }: Props) {
       </div>
 
       <div className="chart-body">
-        <div className={'chart-inner' + (type === 'pizza' || type === 'colunas' || type === 'linhas' ? ' centered' : '')}>
+        <div className={'chart-inner' + (!data.length || type === 'pizza' || type === 'colunas' || type === 'linhas' ? ' centered' : '')}>
         {!data.length ? (
-        <p className="muted small">sem gastos nesse período ainda</p>
+        <p className="muted small chart-empty">sem gastos nesse período ainda</p>
       ) : type === 'pizza' ? (
         <ResponsiveContainer width="100%" height={240}>
           <PieChart>
