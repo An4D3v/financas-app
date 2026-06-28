@@ -38,7 +38,7 @@ export function Summary({ insights, saldo, gastos, period, periodLabel, hasPerio
             <li className="insight">
               <Icon name="chart" className="ins-ico" />
               <span>
-                <b style={{ color: insights.top.color }}>{insights.top.name}</b> é seu maior gasto:{' '}
+                <b className="cat-color" style={{ color: insights.top.color }}>{insights.top.name}</b> é seu maior gasto:{' '}
                 <b className="pink">{brl(insights.top.value)}</b>{' '}
                 <span className="muted">({insights.topPct.toFixed(0)}% do total)</span>
               </span>

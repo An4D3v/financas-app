@@ -29,6 +29,11 @@
 :root[data-theme="light"] .chip.active,
 :root[data-theme="light"] .scroll-top,
 :root[data-theme="light"] .cal-cell.sel { color: #fff; }
+/* no claro, escurece as cores das próprias categorias (texto + indicadores) p/ legibilidade */
+:root[data-theme="light"] .cat-color,
+:root[data-theme="light"] .tx .dot,
+:root[data-theme="light"] .rank-dot,
+:root[data-theme="light"] .rank-fill { filter: brightness(0.65) saturate(1.3); }
 html { transition: background 0.15s ease; }
 * { box-sizing: border-box; }
 .icon { width: 1em; height: 1em; flex: none; vertical-align: -0.14em; }
