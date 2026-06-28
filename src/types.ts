@@ -24,6 +24,14 @@ export type Transaction = {
   created_at: string
 }
 
+/** meta (orçamento) mensal de uma categoria */
+export type Budget = {
+  id: string
+  category_id: string
+  amount: number
+  categories?: { name: string; color: string | null } | null
+}
+
 /** uma linha do modal de revisão da nota escaneada */
 export type ReviewRow = { description: string; value: string; categoryId: string; type: 'entrada' | 'saida' }
 

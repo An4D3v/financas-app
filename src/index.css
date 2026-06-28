@@ -305,6 +305,24 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 .rank-val { flex: none; font-family: ui-monospace, Consolas, monospace; }
 .rank-bar { height: 7px; border-radius: 4px; background: var(--bg); overflow: hidden; }
 .rank-fill { height: 100%; border-radius: 4px; min-width: 2px; }
+
+/* orçamento (metas): card de progresso + modal de edição */
+.budgets { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 13px; }
+.budget-row { display: flex; flex-direction: column; gap: 5px; }
+.budget-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 13px; }
+.budget-name { display: inline-flex; align-items: center; gap: 7px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.budget-val { flex: none; font-family: ui-monospace, Consolas, monospace; }
+.budget-bar { height: 8px; border-radius: 5px; background: var(--bg); overflow: hidden; }
+.budget-fill { height: 100%; border-radius: 5px; min-width: 2px; transition: width 0.3s ease; }
+.budget-fill.ok { background: var(--green); }
+.budget-fill.warn { background: var(--yellow); }
+.budget-fill.over { background: var(--red); }
+.budget-pct { font-family: ui-monospace, Consolas, monospace; font-size: 11px; color: var(--muted); }
+.budget-pct.warn { color: var(--yellow); }
+.budget-pct.over { color: var(--red); }
+.budget-edit-row { display: flex; align-items: center; gap: 10px; }
+.budget-edit-row .budget-name { flex: 1; font-size: 14px; }
+.budget-edit-row .rev-val { flex: none; width: 116px; text-align: right; }
 @media (max-width: 680px) {
   .kpis { grid-template-columns: 1fr; }
   .grid2 { grid-template-columns: 1fr; }

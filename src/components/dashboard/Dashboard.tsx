@@ -9,6 +9,7 @@ import {
   computeTotals,
   computePie,
   computeInsights,
+  computeBudgets,
   periodLabel,
   buildCategoryTimeSeries,
   type Period,
@@ -21,6 +22,7 @@ import { PeriodFilter } from './PeriodFilter'
 import { Kpis } from './Kpis'
 import { EntryForm } from './EntryForm'
 import { CategoryChart } from './CategoryChart'
+import { BudgetCard } from './BudgetCard'
 import { Summary } from './Summary'
 import { TransactionsCard } from './TransactionsCard'
 import { ScanReview } from '../ScanReview'
@@ -30,6 +32,7 @@ import { About } from '../About'
 import { TxModal } from '../TxModal'
 import { ScrollTopButton } from '../ScrollTopButton'
 import { Customize } from '../Customize'
+import { BudgetModal } from '../BudgetModal'
 import { loadOrder, loadCaret, saveOrder, saveCaret, type BlockKey } from '../../lib/customization'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 
@@ -38,7 +41,8 @@ export function Dashboard({ session }: { session: Session }) {
     (session.user.user_metadata?.username as string | undefined) ?? session.user.email?.split('@')[0] ?? ''
   const handle = toHandle(username)
 
-  const { cats, txs, profile, loading, addTx, insertScanned, delTx, updateTx, saveProfile } = useFinanceData(session)
+  const { cats, txs, profile, budgets, loading, addTx, insertScanned, delTx, updateTx, saveProfile, saveBudgets } =
+    useFinanceData(session)
 
   // filtros
   const [period, setPeriod] = useState<Period>('mes')
@@ -59,6 +63,7 @@ export function Dashboard({ session }: { session: Session }) {
   const [showAbout, setShowAbout] = useState(false)
   const [showAll, setShowAll] = useState(false)
   const [showCustomize, setShowCustomize] = useState(false)
+  const [showBudget, setShowBudget] = useState(false)
 
   // customização do layout (salva neste aparelho)
   const [caret, setCaret] = useState(loadCaret())
@@ -69,13 +74,13 @@ export function Dashboard({ session }: { session: Session }) {
 
   // trava o scroll do fundo enquanto um modal está aberto (menu/calendário são popovers, não travam)
   useEffect(() => {
-    const open = !!reviewData || showSettings || showAccount || showAbout || showAll || showCustomize
+    const open = !!reviewData || showSettings || showAccount || showAbout || showAll || showCustomize || showBudget
     if (!open) return
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = ''
     }
-  }, [reviewData, showSettings, showAccount, showAbout, showAll, showCustomize])
+  }, [reviewData, showSettings, showAccount, showAbout, showAll, showCustomize, showBudget])
 
   // derivados — lógica pura em lib/finance
   const periodTxs = useMemo(() => filterByPeriod(txs, period, customFrom, customTo), [txs, period, customFrom, customTo])
@@ -94,6 +99,11 @@ export function Dashboard({ session }: { session: Session }) {
     [periodTxs, catFilter],
   )
   const label = periodLabel(period, customFrom, customTo)
+  const budgetRows = useMemo(() => computeBudgets(budgets, txs), [budgets, txs])
+  const usedCategoryIds = useMemo(
+    () => [...new Set(txs.map((t) => t.category_id).filter((id): id is string => !!id))],
+    [txs],
+  )
 
   /** desenha cada seção do dashboard na ordem escolhida pelo usuário */
   const renderBlock = (key: BlockKey) => {
@@ -104,6 +114,10 @@ export function Dashboard({ session }: { session: Session }) {
         return <EntryForm key="entry" cats={cats} onAdd={addTx} onScanned={setReviewData} />
       case 'chart':
         return <CategoryChart key="chart" data={pie} timeSeries={timeSeries} periodLabel={label} />
+      case 'budget':
+        return budgetRows.length ? (
+          <BudgetCard key="budget" rows={budgetRows} onEdit={() => setShowBudget(true)} />
+        ) : null
       case 'summary':
         return txs.length > 0 ? (
           <Summary
@@ -157,7 +171,8 @@ export function Dashboard({ session }: { session: Session }) {
 
   if (loading) return <div className="center muted">carregando seus dados...</div>
 
-  const anyModal = !!reviewData || showSettings || showAccount || showAbout || showAll || showCustomize
+  const anyModal =
+    !!reviewData || showSettings || showAccount || showAbout || showAll || showCustomize || showBudget
 
   return (
     <div className="app">
@@ -168,6 +183,7 @@ export function Dashboard({ session }: { session: Session }) {
         canReorder={isMobile}
         onSettings={() => setShowSettings(true)}
         onCustomize={() => setShowCustomize(true)}
+        onBudget={() => setShowBudget(true)}
         onAccount={() => setShowAccount(true)}
         onExport={exportCSV}
         onAbout={() => setShowAbout(true)}
@@ -197,6 +213,7 @@ export function Dashboard({ session }: { session: Session }) {
             {renderBlock('entry')}
             {renderBlock('chart')}
           </div>
+          {renderBlock('budget')}
           {renderBlock('summary')}
           {renderBlock('txs')}
         </>
@@ -253,6 +270,16 @@ export function Dashboard({ session }: { session: Session }) {
       )}
 
       {showAbout && <About isOwner={session.user.id === OWNER_ID} onClose={() => setShowAbout(false)} />}
+
+      {showBudget && (
+        <BudgetModal
+          cats={cats}
+          budgets={budgets}
+          usedCategoryIds={usedCategoryIds}
+          onClose={() => setShowBudget(false)}
+          onSave={saveBudgets}
+        />
+      )}
 
       {showCustomize && (
         <Customize

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { applyTheme, type ThemePref } from '../lib/theme'
-import type { Category, Profile, ReviewRow, Transaction, TxPatch } from '../types'
+import type { Budget, Category, Profile, ReviewRow, Transaction, TxPatch } from '../types'
 
 export type NewTx = {
   occurred_on: string
@@ -19,10 +19,11 @@ export function useFinanceData(session: Session) {
   const [cats, setCats] = useState<Category[]>([])
   const [txs, setTxs] = useState<Transaction[]>([])
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [budgets, setBudgets] = useState<Budget[]>([])
   const [loading, setLoading] = useState(true)
 
   const reload = useCallback(async () => {
-    const [catsRes, txRes, profRes] = await Promise.all([
+    const [catsRes, txRes, profRes, budgetsRes] = await Promise.all([
       supabase.from('categories').select('*').order('name'),
       supabase
         .from('transactions')
@@ -30,6 +31,7 @@ export function useFinanceData(session: Session) {
         .order('occurred_on', { ascending: false })
         .order('created_at', { ascending: false }),
       supabase.from('profiles').select('*').maybeSingle(),
+      supabase.from('budgets').select('*, categories(name, color)'),
     ])
     // nomes de categoria sempre em minúsculo (combina com a estética do app)
     const rawCats = (catsRes.data as Category[]) ?? []
@@ -38,6 +40,12 @@ export function useFinanceData(session: Session) {
     setTxs(
       rawTxs.map((t) =>
         t.categories ? { ...t, categories: { ...t.categories, name: t.categories.name.toLowerCase() } } : t,
+      ),
+    )
+    const rawBudgets = (budgetsRes.data as Budget[]) ?? []
+    setBudgets(
+      rawBudgets.map((b) =>
+        b.categories ? { ...b, categories: { ...b.categories, name: b.categories.name.toLowerCase() } } : b,
       ),
     )
     const prof = (profRes.data as Profile | null) ?? null
@@ -122,5 +130,33 @@ export function useFinanceData(session: Session) {
     return true
   }
 
-  return { cats, txs, profile, loading, reload, addTx, insertScanned, delTx, updateTx, saveProfile }
+  /** salva o conjunto desejado de metas: upsert das informadas e remove as que saíram */
+  async function saveBudgets(desired: { category_id: string; amount: number }[]): Promise<boolean> {
+    const keep = new Set(desired.map((d) => d.category_id))
+    const toDelete = budgets.filter((b) => !keep.has(b.category_id)).map((b) => b.id)
+    if (desired.length) {
+      const rows = desired.map((d) => ({
+        user_id: session.user.id,
+        category_id: d.category_id,
+        amount: d.amount,
+        updated_at: new Date().toISOString(),
+      }))
+      const { error } = await supabase.from('budgets').upsert(rows, { onConflict: 'user_id,category_id' })
+      if (error) {
+        alert(error.message)
+        return false
+      }
+    }
+    if (toDelete.length) {
+      const { error } = await supabase.from('budgets').delete().in('id', toDelete)
+      if (error) {
+        alert(error.message)
+        return false
+      }
+    }
+    await reload()
+    return true
+  }
+
+  return { cats, txs, profile, budgets, loading, reload, addTx, insertScanned, delTx, updateTx, saveProfile, saveBudgets }
 }

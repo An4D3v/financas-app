@@ -1,13 +1,15 @@
 // lógica de análise financeira — funções puras, testáveis e sem React.
 // recebem transações e devolvem totais, fatias do gráfico e insights.
 
-import type { Transaction } from '../types'
+import type { Budget, Transaction } from '../types'
 import { NO_CATEGORY_COLOR } from './constants'
 import { todayStr, daysAgoStr, addDays, brDate } from './format'
 
 export type Period = 'dia' | 'semana' | 'mes' | 'tudo' | 'custom'
 
 export type PieSlice = { name: string; value: number; color: string }
+
+export type BudgetRow = { category_id: string; name: string; color: string; limit: number; spent: number; pct: number }
 
 export type Totals = { renda: number; gastos: number; saldo: number }
 
@@ -61,6 +63,31 @@ export function computePie(txs: Transaction[]): PieSlice[] {
     byCategory.set(name, slice)
   }
   return [...byCategory.values()].sort((a, b) => b.value - a.value)
+}
+
+/** progresso das metas no MÊS corrente (independe do filtro de período), do mais estourado p/ o menos */
+export function computeBudgets(budgets: Budget[], txs: Transaction[]): BudgetRow[] {
+  const ym = todayStr().slice(0, 7)
+  const spentByCat = new Map<string, number>()
+  for (const t of txs) {
+    if (t.type !== 'saida' || !t.category_id) continue
+    if (t.occurred_on.slice(0, 7) !== ym) continue
+    spentByCat.set(t.category_id, (spentByCat.get(t.category_id) ?? 0) + Number(t.amount))
+  }
+  return budgets
+    .map((b) => {
+      const limit = Number(b.amount)
+      const spent = spentByCat.get(b.category_id) ?? 0
+      return {
+        category_id: b.category_id,
+        name: b.categories?.name ?? 'sem categoria',
+        color: b.categories?.color ?? NO_CATEGORY_COLOR,
+        limit,
+        spent,
+        pct: limit > 0 ? (spent / limit) * 100 : 0,
+      }
+    })
+    .sort((a, b) => b.pct - a.pct)
 }
 
 /** rótulo curto do período, p/ KPIs e títulos */
