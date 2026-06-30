@@ -27,13 +27,14 @@ Deno.serve(async (req) => {
     const cats: string[] = Array.isArray(categories) ? categories : [];
     const prompt =
       "Voce le notas fiscais, cupons fiscais e comprovantes brasileiros. Leia a imagem com MUITA atencao e extraia:\n" +
-      "- merchant: nome do estabelecimento/loja\n" +
+      "- merchant: nome do estabelecimento/loja (ou de quem enviou/recebeu, em comprovantes)\n" +
       "- date: data da compra em YYYY-MM-DD; se nao achar, string vazia\n" +
-      "- items: a lista de valores/itens da nota. Para CADA item retorne: description (nome do produto ou do gasto), value (numero com ponto decimal, ex 12.34), category (escolha exatamente UMA da lista: " +
+      "- items: REGRA PRINCIPAL — para uma nota/cupom/comprovante de UMA compra, retorne APENAS UM item: value = o VALOR TOTAL FINAL da nota (o 'total', 'total a pagar', 'valor total' ou 'valor pago'), e description = o nome da loja (ou 'Compra'). NAO liste os produtos um a um. NUNCA retorne preco unitario, quantidade, subtotal, impostos/tributos, descontos, troco nem forma de pagamento como itens — esses valores nao viram lancamentos; so o total final conta.\n" +
+      "  EXCECAO: se a imagem for claramente um EXTRATO ou lista de transacoes SEPARADAS e independentes (varias compras/recebimentos distintos, geralmente com datas/descricoes proprias), ai sim retorne um item para CADA transacao independente — mas nunca os itens internos de uma mesma compra.\n" +
+      "- Para cada item retorne tambem: value (numero com ponto decimal, ex 187.40), category (escolha exatamente UMA da lista: " +
       cats.join("; ") +
       ") e type.\n" +
-      "- type: classifique CADA item como \"saida\" (gasto/despesa/compra/pagamento/debito) ou \"entrada\" (receita/recebimento/deposito/PIX recebido/transferencia recebida/salario/venda/credito). A maioria das notas e de gastos (saida). Um MESMO comprovante pode conter entradas E saidas ao mesmo tempo — classifique cada item pela sua propria natureza, nao pelo conjunto. Na duvida, use \"saida\".\n" +
-      "Se a nota tiver varios produtos/valores distintos, retorne um item para CADA um. Se houver apenas um valor (um total unico), retorne UM unico item com description igual ao nome da loja (ou 'Compra') e value igual ao total.\n" +
+      "- type: \"saida\" (gasto/despesa/compra/pagamento/debito) ou \"entrada\" (receita/recebimento/deposito/PIX recebido/transferencia recebida/salario/venda/credito). A maioria das notas e gasto (saida). Na duvida, use \"saida\".\n" +
       "Se a imagem claramente nao for uma nota/cupom/comprovante, retorne items como lista vazia.";
 
     const model = Deno.env.get("GEMINI_MODEL") ?? "gemini-flash-lite-latest";
