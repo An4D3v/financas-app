@@ -56,22 +56,43 @@ function RecRow({
         {r.type === 'entrada' ? '+' : '−'}
       </button>
 
-      <span className="rec-desc">
-        {edit === 'desc' ? (
-          <input
-            className="tx-edit tx-edit-desc"
-            autoFocus
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={commit}
-            onKeyDown={onKey}
-          />
-        ) : (
-          <span className="editable" title="editar nome" onClick={() => start('desc', r.description)}>
-            {r.description}
-          </span>
-        )}{' '}
-        <small className="muted">
+      <div className="rec-body">
+        <div className="rec-top">
+          {edit === 'desc' ? (
+            <input
+              className="tx-edit tx-edit-desc"
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onBlur={commit}
+              onKeyDown={onKey}
+            />
+          ) : (
+            <span className="rec-desc editable" title="editar nome" onClick={() => start('desc', r.description)}>
+              {r.description}
+            </span>
+          )}
+          {edit === 'amount' ? (
+            <input
+              className="tx-edit tx-edit-val"
+              inputMode="decimal"
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onBlur={commit}
+              onKeyDown={onKey}
+            />
+          ) : (
+            <span
+              className="rec-val editable"
+              title="editar valor"
+              onClick={() => start('amount', Number(r.amount).toFixed(2).replace('.', ','))}
+            >
+              {brl(r.amount)}
+            </span>
+          )}
+        </div>
+        <div className="rec-sub">
           dia{' '}
           {edit === 'day' ? (
             <input
@@ -115,28 +136,8 @@ function RecRow({
               {catName ?? 'sem categoria'}
             </span>
           )}
-        </small>
-      </span>
-
-      {edit === 'amount' ? (
-        <input
-          className="tx-edit tx-edit-val"
-          inputMode="decimal"
-          autoFocus
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          onKeyDown={onKey}
-        />
-      ) : (
-        <span
-          className="rec-val editable"
-          title="editar valor"
-          onClick={() => start('amount', Number(r.amount).toFixed(2).replace('.', ','))}
-        >
-          {brl(r.amount)}
-        </span>
-      )}
+        </div>
+      </div>
 
       <button className="x" onClick={() => onDelete(r.id)} title="excluir">
         ×
