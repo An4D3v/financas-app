@@ -118,7 +118,7 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 .btn.scan:disabled { opacity: 0.6; cursor: default; }
 .btn.scan:hover:not(:disabled) { filter: brightness(1.07); }
 .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; animation: overlayIn 0.18s ease; }
-.modal { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; width: 540px; max-width: 100%; max-height: 90vh; display: flex; flex-direction: column; position: relative; overflow-wrap: anywhere; animation: modalPop 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.modal { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; width: 540px; max-width: 100%; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; position: relative; overflow-wrap: anywhere; animation: modalPop 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
 @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes modalPop { from { opacity: 0; transform: translateY(10px) scale(0.985); } to { opacity: 1; transform: none; } }
 .modal-head { display: flex; justify-content: space-between; align-items: center; }
@@ -399,11 +399,11 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
   width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer;
   background: var(--cyan); color: #04222a; font-size: 30px; line-height: 1;
   display: flex; align-items: center; justify-content: center;
-  opacity: 0.92; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  opacity: 0.6; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
   transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
 }
 .qa-fab:hover { opacity: 1; }
-.qa-fab.open { transform: rotate(45deg); }
+.qa-fab.open { opacity: 1; transform: rotate(45deg); }
 .qa-menu {
   position: absolute; left: 2px; bottom: calc(100% + 12px);
   display: flex; flex-direction: column; align-items: flex-start; gap: 8px;

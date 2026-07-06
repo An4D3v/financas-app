@@ -38,12 +38,10 @@ import { NotesModal } from '../NotesModal'
 import {
   loadOrder,
   loadCaret,
-  loadCalc,
-  loadNotesEnabled,
+  loadQuickActions,
   saveOrder,
   saveCaret,
-  saveCalc,
-  saveNotesEnabled,
+  saveQuickActions,
   type BlockKey,
 } from '../../lib/customization'
 import { QuickActions } from '../QuickActions'
@@ -107,8 +105,7 @@ export function Dashboard({ session }: { session: Session }) {
 
   // customização do layout (salva neste aparelho)
   const [caret, setCaret] = useState(loadCaret())
-  const [calc, setCalc] = useState(loadCalc())
-  const [notesEnabled, setNotesEnabled] = useState(loadNotesEnabled())
+  const [quickActions, setQuickActions] = useState(loadQuickActions())
   const [order, setOrder] = useState<BlockKey[]>(loadOrder())
 
   // reordenar seções só faz sentido no empilhado do celular; no desktop o layout é fixo (2-col)
@@ -320,8 +317,7 @@ export function Dashboard({ session }: { session: Session }) {
           hobbies={profile?.hobbies ?? []}
           theme={theme}
           caret={caret}
-          calc={calc}
-          notesEnabled={notesEnabled}
+          quickActions={quickActions}
           showCaretToggle={!isMobile}
           onPreview={previewTheme}
           onClose={() => {
@@ -331,10 +327,8 @@ export function Dashboard({ session }: { session: Session }) {
           onSave={async (data) => {
             setCaret(data.caret)
             saveCaret(data.caret)
-            setCalc(data.calc)
-            saveCalc(data.calc)
-            setNotesEnabled(data.notesEnabled)
-            saveNotesEnabled(data.notesEnabled)
+            setQuickActions(data.quickActions)
+            saveQuickActions(data.quickActions)
             if (await saveProfile({ profession: data.profession, hobbies: data.hobbies, theme: data.theme })) {
               setTheme(data.theme)
               applyTheme(data.theme)
@@ -391,17 +385,14 @@ export function Dashboard({ session }: { session: Session }) {
       {showCustomize && (
         <Customize
           caret={caret}
-          calc={calc}
-          notesEnabled={notesEnabled}
+          quickActions={quickActions}
           order={order}
           onClose={() => setShowCustomize(false)}
-          onSave={({ caret: c, calc: cc, notesEnabled: ne, order: o }) => {
+          onSave={({ caret: c, quickActions: q, order: o }) => {
             setCaret(c)
             saveCaret(c)
-            setCalc(cc)
-            saveCalc(cc)
-            setNotesEnabled(ne)
-            saveNotesEnabled(ne)
+            setQuickActions(q)
+            saveQuickActions(q)
             setOrder(o)
             saveOrder(o)
             setShowCustomize(false)
@@ -414,9 +405,7 @@ export function Dashboard({ session }: { session: Session }) {
       )}
 
       {!anyModal && <ScrollTopButton />}
-      {(calc || notesEnabled) && !anyModal && (
-        <QuickActions showCalc={calc} showNotes={notesEnabled} onNotes={() => setShowNotes(true)} />
-      )}
+      {quickActions && !anyModal && <QuickActions onNotes={() => setShowNotes(true)} />}
       {undo.pending && <Toast key={undo.pending.id} message={undo.pending.message} onUndo={undo.undo} />}
     </div>
   )

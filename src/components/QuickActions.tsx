@@ -4,15 +4,7 @@ import { useDismissable } from '../hooks/useDismissable'
 import { CalcPanel } from './Calculator'
 
 /** botão flutuante "+" que abre um leque de atalhos (notas / calculadora) acima dele */
-export function QuickActions({
-  showCalc,
-  showNotes,
-  onNotes,
-}: {
-  showCalc: boolean
-  showNotes: boolean
-  onNotes: () => void
-}) {
+export function QuickActions({ onNotes }: { onNotes: () => void }) {
   const [menu, setMenu] = useState(false)
   const [calc, setCalc] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -29,32 +21,28 @@ export function QuickActions({
 
       {menu && (
         <div className="qa-menu" role="menu">
-          {showNotes && (
-            <button
-              type="button"
-              className="qa-item"
-              role="menuitem"
-              onClick={() => {
-                setMenu(false)
-                onNotes()
-              }}
-            >
-              <Icon name="note" /> notas
-            </button>
-          )}
-          {showCalc && (
-            <button
-              type="button"
-              className="qa-item"
-              role="menuitem"
-              onClick={() => {
-                setMenu(false)
-                setCalc(true)
-              }}
-            >
-              <Icon name="calculator" /> calculadora
-            </button>
-          )}
+          <button
+            type="button"
+            className="qa-item"
+            role="menuitem"
+            onClick={() => {
+              setMenu(false)
+              onNotes()
+            }}
+          >
+            <Icon name="note" /> notas
+          </button>
+          <button
+            type="button"
+            className="qa-item"
+            role="menuitem"
+            onClick={() => {
+              setMenu(false)
+              setCalc(true)
+            }}
+          >
+            <Icon name="calculator" /> calculadora
+          </button>
         </div>
       )}
 
