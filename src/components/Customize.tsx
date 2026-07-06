@@ -5,18 +5,21 @@ import { BLOCK_LABELS, DEFAULT_ORDER, type BlockKey } from '../lib/customization
 export function Customize({
   caret,
   calc,
+  notesEnabled,
   order,
   onClose,
   onSave,
 }: {
   caret: boolean
   calc: boolean
+  notesEnabled: boolean
   order: BlockKey[]
   onClose: () => void
-  onSave: (data: { caret: boolean; calc: boolean; order: BlockKey[] }) => void
+  onSave: (data: { caret: boolean; calc: boolean; notesEnabled: boolean; order: BlockKey[] }) => void
 }) {
   const [caretDraft, setCaretDraft] = useState(caret)
   const [calcDraft, setCalcDraft] = useState(calc)
+  const [notesDraft, setNotesDraft] = useState(notesEnabled)
   const [orderDraft, setOrderDraft] = useState<BlockKey[]>(order)
 
   function move(i: number, dir: -1 | 1) {
@@ -56,16 +59,33 @@ export function Customize({
         </div>
 
         <div className="set-section">
-          <span className="set-label">// calculadora flutuante</span>
+          <span className="set-label">// atalho: calculadora</span>
           <div className="switch-row">
-            <span className="muted small">botãozinho de calculadora no canto inferior</span>
+            <span className="muted small">mostra a calculadora no botão de atalhos (+)</span>
             <button
               type="button"
               role="switch"
               aria-checked={calcDraft}
-              aria-label="calculadora flutuante"
+              aria-label="atalho de calculadora"
               className={'switch' + (calcDraft ? ' on' : '')}
               onClick={() => setCalcDraft((v) => !v)}
+            >
+              <span className="knob" />
+            </button>
+          </div>
+        </div>
+
+        <div className="set-section">
+          <span className="set-label">// atalho: anotações</span>
+          <div className="switch-row">
+            <span className="muted small">mostra as anotações no botão de atalhos (+)</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={notesDraft}
+              aria-label="atalho de anotações"
+              className={'switch' + (notesDraft ? ' on' : '')}
+              onClick={() => setNotesDraft((v) => !v)}
             >
               <span className="knob" />
             </button>
@@ -114,7 +134,7 @@ export function Customize({
             </button>
             <button
               className="btn primary"
-              onClick={() => onSave({ caret: caretDraft, calc: calcDraft, order: orderDraft })}
+              onClick={() => onSave({ caret: caretDraft, calc: calcDraft, notesEnabled: notesDraft, order: orderDraft })}
               title="salvar"
               aria-label="salvar"
             >

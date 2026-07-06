@@ -17,6 +17,7 @@ export function Settings({
   theme,
   caret,
   calc,
+  notesEnabled,
   showCaretToggle,
   onPreview,
   onClose,
@@ -28,16 +29,25 @@ export function Settings({
   theme: ThemePref
   caret: boolean
   calc: boolean
+  notesEnabled: boolean
   showCaretToggle: boolean
   onPreview: (t: ThemePref) => void
   onClose: () => void
-  onSave: (data: { profession: string; hobbies: string[]; theme: ThemePref; caret: boolean; calc: boolean }) => Promise<void>
+  onSave: (data: {
+    profession: string
+    hobbies: string[]
+    theme: ThemePref
+    caret: boolean
+    calc: boolean
+    notesEnabled: boolean
+  }) => Promise<void>
 }) {
   const [profession, setProfession] = useState(initProfession)
   const [hobbies, setHobbies] = useState<string[]>(initHobbies)
   const [themeDraft, setThemeDraft] = useState(theme)
   const [caretDraft, setCaretDraft] = useState(caret)
   const [calcDraft, setCalcDraft] = useState(calc)
+  const [notesDraft, setNotesDraft] = useState(notesEnabled)
   const [draft, setDraft] = useState('')
   const [saving, setSaving] = useState(false)
   const full = hobbies.length >= MAX_HOBBIES
@@ -58,7 +68,14 @@ export function Settings({
   }
   async function save() {
     setSaving(true)
-    await onSave({ profession: profession.trim(), hobbies, theme: themeDraft, caret: caretDraft, calc: calcDraft })
+    await onSave({
+      profession: profession.trim(),
+      hobbies,
+      theme: themeDraft,
+      caret: caretDraft,
+      calc: calcDraft,
+      notesEnabled: notesDraft,
+    })
     setSaving(false)
   }
 
@@ -112,16 +129,33 @@ export function Settings({
             </div>
 
             <div className="set-section">
-              <span className="set-label">// calculadora flutuante</span>
+              <span className="set-label">// atalho: calculadora</span>
               <div className="switch-row">
-                <span className="muted small">botãozinho de calculadora no canto inferior</span>
+                <span className="muted small">mostra a calculadora no botão de atalhos (+)</span>
                 <button
                   type="button"
                   role="switch"
                   aria-checked={calcDraft}
-                  aria-label="calculadora flutuante"
+                  aria-label="atalho de calculadora"
                   className={'switch' + (calcDraft ? ' on' : '')}
                   onClick={() => setCalcDraft((v) => !v)}
+                >
+                  <span className="knob" />
+                </button>
+              </div>
+            </div>
+
+            <div className="set-section">
+              <span className="set-label">// atalho: anotações</span>
+              <div className="switch-row">
+                <span className="muted small">mostra as anotações no botão de atalhos (+)</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={notesDraft}
+                  aria-label="atalho de anotações"
+                  className={'switch' + (notesDraft ? ' on' : '')}
+                  onClick={() => setNotesDraft((v) => !v)}
                 >
                   <span className="knob" />
                 </button>

@@ -1,6 +1,4 @@
-import { useRef, useState } from 'react'
-import { Icon } from './Icon'
-import { useDismissable } from '../hooks/useDismissable'
+import { useState } from 'react'
 
 const KEYS = [
   ['C', '⌫', '%', '÷'],
@@ -21,12 +19,8 @@ function op(a: number, b: number, o: string): number {
 
 const fmt = (n: number) => (Number.isFinite(n) ? String(n) : 'erro')
 
-/** mini calculadora flutuante (botão semitransparente no canto inferior esquerdo) */
-export function CalcWidget() {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-  useDismissable(open, ref, () => setOpen(false))
-
+/** teclado da calculadora — quem controla a visibilidade é o QuickActions (atalho +) */
+export function CalcPanel() {
   const [display, setDisplay] = useState('0')
   const [prev, setPrev] = useState<number | null>(null)
   const [pending, setPending] = useState<string | null>(null)
@@ -83,39 +77,25 @@ export function CalcWidget() {
   }
 
   return (
-    <div className="calc-wrap" ref={ref}>
-      {open && (
-        <div className="calc-panel" role="dialog" aria-label="calculadora">
-          <div className="calc-display">{display}</div>
-          <div className="calc-grid">
-            {KEYS.flat().map((k) => (
-              <button
-                key={k}
-                type="button"
-                className={
-                  'calc-key' +
-                  (k === '0' ? ' wide' : '') +
-                  ('+−×÷='.includes(k) ? ' op' : '') +
-                  (k === 'C' ? ' clear' : '')
-                }
-                onClick={() => press(k)}
-              >
-                {k}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-      <button
-        type="button"
-        className="calc-fab"
-        title="calculadora"
-        aria-label="calculadora"
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-      >
-        <Icon name="calculator" />
-      </button>
+    <div className="calc-panel" role="dialog" aria-label="calculadora">
+      <div className="calc-display">{display}</div>
+      <div className="calc-grid">
+        {KEYS.flat().map((k) => (
+          <button
+            key={k}
+            type="button"
+            className={
+              'calc-key' +
+              (k === '0' ? ' wide' : '') +
+              ('+−×÷='.includes(k) ? ' op' : '') +
+              (k === 'C' ? ' clear' : '')
+            }
+            onClick={() => press(k)}
+          >
+            {k}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

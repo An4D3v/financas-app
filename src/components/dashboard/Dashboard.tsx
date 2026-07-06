@@ -35,8 +35,18 @@ import { Customize } from '../Customize'
 import { BudgetModal } from '../BudgetModal'
 import { RecurringModal } from '../RecurringModal'
 import { NotesModal } from '../NotesModal'
-import { loadOrder, loadCaret, loadCalc, saveOrder, saveCaret, saveCalc, type BlockKey } from '../../lib/customization'
-import { CalcWidget } from '../Calculator'
+import {
+  loadOrder,
+  loadCaret,
+  loadCalc,
+  loadNotesEnabled,
+  saveOrder,
+  saveCaret,
+  saveCalc,
+  saveNotesEnabled,
+  type BlockKey,
+} from '../../lib/customization'
+import { QuickActions } from '../QuickActions'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { useUndo } from '../../hooks/useUndo'
 import { Toast } from '../Toast'
@@ -98,6 +108,7 @@ export function Dashboard({ session }: { session: Session }) {
   // customização do layout (salva neste aparelho)
   const [caret, setCaret] = useState(loadCaret())
   const [calc, setCalc] = useState(loadCalc())
+  const [notesEnabled, setNotesEnabled] = useState(loadNotesEnabled())
   const [order, setOrder] = useState<BlockKey[]>(loadOrder())
 
   // reordenar seções só faz sentido no empilhado do celular; no desktop o layout é fixo (2-col)
@@ -253,7 +264,6 @@ export function Dashboard({ session }: { session: Session }) {
         onCustomize={() => setShowCustomize(true)}
         onBudget={() => setShowBudget(true)}
         onRecurring={() => setShowRecurring(true)}
-        onNotes={() => setShowNotes(true)}
         onAccount={() => setShowAccount(true)}
         onExport={exportCSV}
         onAbout={() => setShowAbout(true)}
@@ -311,6 +321,7 @@ export function Dashboard({ session }: { session: Session }) {
           theme={theme}
           caret={caret}
           calc={calc}
+          notesEnabled={notesEnabled}
           showCaretToggle={!isMobile}
           onPreview={previewTheme}
           onClose={() => {
@@ -322,6 +333,8 @@ export function Dashboard({ session }: { session: Session }) {
             saveCaret(data.caret)
             setCalc(data.calc)
             saveCalc(data.calc)
+            setNotesEnabled(data.notesEnabled)
+            saveNotesEnabled(data.notesEnabled)
             if (await saveProfile({ profession: data.profession, hobbies: data.hobbies, theme: data.theme })) {
               setTheme(data.theme)
               applyTheme(data.theme)
@@ -379,13 +392,16 @@ export function Dashboard({ session }: { session: Session }) {
         <Customize
           caret={caret}
           calc={calc}
+          notesEnabled={notesEnabled}
           order={order}
           onClose={() => setShowCustomize(false)}
-          onSave={({ caret: c, calc: cc, order: o }) => {
+          onSave={({ caret: c, calc: cc, notesEnabled: ne, order: o }) => {
             setCaret(c)
             saveCaret(c)
             setCalc(cc)
             saveCalc(cc)
+            setNotesEnabled(ne)
+            saveNotesEnabled(ne)
             setOrder(o)
             saveOrder(o)
             setShowCustomize(false)
@@ -398,7 +414,9 @@ export function Dashboard({ session }: { session: Session }) {
       )}
 
       {!anyModal && <ScrollTopButton />}
-      {calc && !anyModal && <CalcWidget />}
+      {(calc || notesEnabled) && !anyModal && (
+        <QuickActions showCalc={calc} showNotes={notesEnabled} onNotes={() => setShowNotes(true)} />
+      )}
       {undo.pending && <Toast key={undo.pending.id} message={undo.pending.message} onUndo={undo.undo} />}
     </div>
   )
