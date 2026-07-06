@@ -424,6 +424,24 @@ input:focus, select:focus { outline: 2px solid var(--cyan); border-color: transp
 .calc-key.wide { grid-column: span 2; }
 .calc-key.op { background: color-mix(in srgb, var(--cyan) 18%, var(--bg)); color: var(--cyan); }
 .calc-key.clear { color: var(--red); }
+
+/* bloco de anotações */
+.note-input {
+  width: 100%; resize: vertical; min-height: 60px; padding: 10px 12px;
+  font-family: inherit; font-size: 14px; line-height: 1.4;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 9px; color: var(--txt);
+}
+.note-input:focus { outline: 2px solid var(--cyan); border-color: transparent; }
+.notes-list { flex: 1; min-height: 0; }
+.note-card {
+  background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.note-text { font-size: 14px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; cursor: pointer; }
+.note-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.note-btns { display: flex; align-items: center; gap: 6px; flex: none; }
+.note-edit { padding: 6px 9px; }
+.note-save { padding: 7px 12px; font-size: 13px; }
 @media (max-width: 680px) {
   .kpis { grid-template-columns: 1fr; }
   .grid2 { grid-template-columns: 1fr; }

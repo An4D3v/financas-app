@@ -35,6 +35,13 @@ export function addDays(dateStr: string, n: number): string {
 /** "2026-06-24" -> "24/06" */
 export const brDate = (d: string) => (d ? d.slice(8, 10) + '/' + d.slice(5, 7) : '')
 
+/** timestamptz ISO -> "24/06/2026 14:23" (hora local) */
+export function brDateTime(iso: string): string {
+  return new Date(iso)
+    .toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    .replace(', ', ' ')
+}
+
 /** lê um arquivo como base64 puro (sem o prefixo data:...) */
 export function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {

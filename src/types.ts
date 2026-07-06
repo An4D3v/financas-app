@@ -34,6 +34,14 @@ export type Budget = {
   categories?: { name: string; color: string | null } | null
 }
 
+/** anotação livre do usuário (bloco de notas) */
+export type Note = {
+  id: string
+  content: string
+  created_at: string
+  updated_at: string
+}
+
 /** conta fixa: um lançamento que se repete todo mês */
 export type Recurring = {
   id: string

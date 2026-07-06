@@ -34,6 +34,7 @@ import { ScrollTopButton } from '../ScrollTopButton'
 import { Customize } from '../Customize'
 import { BudgetModal } from '../BudgetModal'
 import { RecurringModal } from '../RecurringModal'
+import { NotesModal } from '../NotesModal'
 import { loadOrder, loadCaret, loadCalc, saveOrder, saveCaret, saveCalc, type BlockKey } from '../../lib/customization'
 import { CalcWidget } from '../Calculator'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
@@ -64,6 +65,11 @@ export function Dashboard({ session }: { session: Session }) {
     delRecurring,
     restoreRecurring,
     toggleTxRecurring,
+    notes,
+    addNote,
+    updateNote,
+    delNote,
+    restoreNote,
   } = useFinanceData(session)
 
   // filtros
@@ -87,6 +93,7 @@ export function Dashboard({ session }: { session: Session }) {
   const [showCustomize, setShowCustomize] = useState(false)
   const [showBudget, setShowBudget] = useState(false)
   const [showRecurring, setShowRecurring] = useState(false)
+  const [showNotes, setShowNotes] = useState(false)
 
   // customização do layout (salva neste aparelho)
   const [caret, setCaret] = useState(loadCaret())
@@ -100,13 +107,21 @@ export function Dashboard({ session }: { session: Session }) {
   // trava o scroll do fundo enquanto um modal está aberto (menu/calendário são popovers, não travam)
   useEffect(() => {
     const open =
-      !!reviewData || showSettings || showAccount || showAbout || showAll || showCustomize || showBudget || showRecurring
+      !!reviewData ||
+      showSettings ||
+      showAccount ||
+      showAbout ||
+      showAll ||
+      showCustomize ||
+      showBudget ||
+      showRecurring ||
+      showNotes
     if (!open) return
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = ''
     }
-  }, [reviewData, showSettings, showAccount, showAbout, showAll, showCustomize, showBudget, showRecurring])
+  }, [reviewData, showSettings, showAccount, showAbout, showAll, showCustomize, showBudget, showRecurring, showNotes])
 
   // derivados — lógica pura em lib/finance
   const periodTxs = useMemo(() => filterByPeriod(txs, period, customFrom, customTo), [txs, period, customFrom, customTo])
@@ -142,6 +157,11 @@ export function Dashboard({ session }: { session: Session }) {
     const linkedTxIds = txs.filter((t) => t.recurring_id === id).map((t) => t.id)
     delRecurring(id)
     if (removed) undo.show('conta fixa excluída', () => restoreRecurring(removed, linkedTxIds))
+  }
+  const onDeleteNote = (id: string) => {
+    const removed = notes.find((n) => n.id === id)
+    delNote(id)
+    if (removed) undo.show('anotação excluída', () => restoreNote(removed))
   }
 
   /** desenha cada seção do dashboard na ordem escolhida pelo usuário */
@@ -219,7 +239,8 @@ export function Dashboard({ session }: { session: Session }) {
     showAll ||
     showCustomize ||
     showBudget ||
-    showRecurring
+    showRecurring ||
+    showNotes
 
   return (
     <div className="app">
@@ -232,6 +253,7 @@ export function Dashboard({ session }: { session: Session }) {
         onCustomize={() => setShowCustomize(true)}
         onBudget={() => setShowBudget(true)}
         onRecurring={() => setShowRecurring(true)}
+        onNotes={() => setShowNotes(true)}
         onAccount={() => setShowAccount(true)}
         onExport={exportCSV}
         onAbout={() => setShowAbout(true)}
@@ -340,6 +362,16 @@ export function Dashboard({ session }: { session: Session }) {
           onUpdate={updateRecurring}
           onDelete={onDeleteRecurring}
           onClose={() => setShowRecurring(false)}
+        />
+      )}
+
+      {showNotes && (
+        <NotesModal
+          notes={notes}
+          onAdd={addNote}
+          onUpdate={updateNote}
+          onDelete={onDeleteNote}
+          onClose={() => setShowNotes(false)}
         />
       )}
 

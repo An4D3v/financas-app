@@ -6,7 +6,7 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { applyTheme, type ThemePref } from '../lib/theme'
 import { todayStr } from '../lib/format'
-import type { Budget, Category, Profile, Recurring, ReviewRow, Transaction, TxPatch } from '../types'
+import type { Budget, Category, Note, Profile, Recurring, ReviewRow, Transaction, TxPatch } from '../types'
 
 export type NewTx = {
   occurred_on: string
@@ -67,10 +67,11 @@ export function useFinanceData(session: Session) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [budgets, setBudgets] = useState<Budget[]>([])
   const [recurring, setRecurring] = useState<Recurring[]>([])
+  const [notes, setNotes] = useState<Note[]>([])
   const [loading, setLoading] = useState(true)
 
   const reload = useCallback(async () => {
-    const [catsRes, txRes, profRes, budgetsRes, recRes] = await Promise.all([
+    const [catsRes, txRes, profRes, budgetsRes, recRes, notesRes] = await Promise.all([
       supabase.from('categories').select('*').order('name'),
       supabase
         .from('transactions')
@@ -80,6 +81,7 @@ export function useFinanceData(session: Session) {
       supabase.from('profiles').select('*').maybeSingle(),
       supabase.from('budgets').select('*, categories(name, color)'),
       supabase.from('recurring').select('*').order('day_of_month'),
+      supabase.from('notes').select('*').order('updated_at', { ascending: false }),
     ])
     // nomes de categoria sempre em minúsculo (combina com a estética do app)
     const rawCats = (catsRes.data as Category[]) ?? []
@@ -98,6 +100,7 @@ export function useFinanceData(session: Session) {
     )
     const recList = (recRes.data as Recurring[]) ?? []
     setRecurring(recList)
+    setNotes((notesRes.data as Note[]) ?? [])
     const prof = (profRes.data as Profile | null) ?? null
     setProfile(prof)
     if (prof?.theme) applyTheme(prof.theme)
@@ -373,6 +376,43 @@ export function useFinanceData(session: Session) {
     }
   }
 
+  async function addNote(content: string): Promise<string | null> {
+    const { error } = await supabase.from('notes').insert({ user_id: session.user.id, content })
+    if (error) return error.message
+    await reload()
+    return null
+  }
+
+  async function updateNote(id: string, content: string) {
+    const now = new Date().toISOString()
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, content, updated_at: now } : n)))
+    const { error } = await supabase.from('notes').update({ content, updated_at: now }).eq('id', id)
+    if (error) {
+      alert(error.message)
+      reload()
+    }
+  }
+
+  async function delNote(id: string) {
+    setNotes((prev) => prev.filter((n) => n.id !== id))
+    await supabase.from('notes').delete().eq('id', id)
+  }
+
+  /** desfazer exclusão: reinsere a anotação preservando id e datas */
+  async function restoreNote(n: Note) {
+    const { error } = await supabase.from('notes').insert({
+      id: n.id,
+      content: n.content,
+      created_at: n.created_at,
+      updated_at: n.updated_at,
+    })
+    if (error) {
+      alert(error.message)
+      return
+    }
+    await reload()
+  }
+
   return {
     cats,
     txs,
@@ -393,5 +433,10 @@ export function useFinanceData(session: Session) {
     delRecurring,
     restoreRecurring,
     toggleTxRecurring,
+    notes,
+    addNote,
+    updateNote,
+    delNote,
+    restoreNote,
   }
 }
