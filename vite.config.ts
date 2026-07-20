@@ -30,6 +30,10 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
         navigateFallback: 'index.html',
+        // o tour (onboarding) é uma página estática própria — sem a denylist o SW devolveria o index no lugar dela
+        navigateFallbackDenylist: [/^\/tour\.html/],
+        // sem ignorar ?app=1, a navegação do onboarding daria cache-miss no precache (network-only; offline quebraria)
+        ignoreURLParametersMatching: [/^app$/, /^utm_/, /^fbclid$/],
         cleanupOutdatedCaches: true,
       },
       // o service worker não roda em dev (evita cache atrapalhando o desenvolvimento)

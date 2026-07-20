@@ -6,3 +6,6 @@ export const OWNER_ID = '35e0eaf1-d4cc-4caa-91e4-e2d9518c58a7'
 
 /** cor padrão de categorias sem cor definida */
 export const NO_CATEGORY_COLOR = '#8B949E'
+
+/** flag no localStorage: visitante já viu (ou pulou) o tour de boas-vindas (/tour.html) */
+export const TOUR_VISTO_KEY = 'af_tour_visto'

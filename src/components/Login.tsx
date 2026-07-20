@@ -122,6 +122,13 @@ export function Login() {
           </button>
           {msg && <p className="msg">{msg}</p>}
 
+          <button
+            type="button"
+            className="tour-link"
+            onClick={() => window.location.assign('/tour.html?app=1')}
+          >
+            $ ./tour <span className="tour-link-hint">— ver demo do app</span>
+          </button>
           <p className="term-foot muted small">// suas finanças, 100% no seu terminal</p>
         </div>
       </form>
