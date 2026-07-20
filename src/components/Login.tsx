@@ -1,13 +1,20 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { supabase } from '../lib/supabase'
 
 export function Login() {
-  const [mode, setMode] = useState<'in' | 'up'>('in')
+  // o CTA do tour ("começar agora") chega em /#cadastrar — abre direto na aba de cadastro
+  const [mode, setMode] = useState<'in' | 'up'>(() =>
+    window.location.hash === '#cadastrar' ? 'up' : 'in'
+  )
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
   const [msg, setMsg] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    if (window.location.hash === '#cadastrar') history.replaceState(null, '', '/')
+  }, [])
 
   async function submit(e: FormEvent) {
     e.preventDefault()

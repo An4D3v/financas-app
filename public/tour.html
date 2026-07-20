@@ -378,7 +378,7 @@
   var APP_MODE = new URLSearchParams(location.search).get('app')==='1';
   if(APP_MODE) document.documentElement.classList.add('app-mode');
   function marcarVisto(){ try{ localStorage.setItem('af_tour_visto','1'); }catch(e){} }
-  function irParaApp(){ marcarVisto(); location.href='/'; }
+  function irParaApp(destino){ marcarVisto(); location.href = destino || '/'; }
 
   /* ---------- dados reais (conta demo · período "tudo") ---------- */
   var K = { renda:12800.00, gastos:8390.15, saldo:4409.85 };
@@ -696,10 +696,10 @@
     setPlaying(!playing);
   });
   $('#restart').addEventListener('click', function(){ loadScene(0); setPlaying(true); });
-  $('#skipBtn').addEventListener('click', irParaApp);
+  $('#skipBtn').addEventListener('click', function(){ irParaApp(); }); // sem passar o event como destino
   document.addEventListener('click', function(e){
     if(e.target && e.target.id==='replay'){ loadScene(0); setPlaying(true); }
-    if(e.target && e.target.id==='goApp'){ irParaApp(); }
+    if(e.target && e.target.id==='goApp'){ irParaApp('/#cadastrar'); }
   });
 
   /* ---------- ajuste de escala do device ---------- */
