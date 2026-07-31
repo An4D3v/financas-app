@@ -1,0 +1,31 @@
+name: keep-supabase-awake
+
+# Toca a API do Supabase 1x/dia para o projeto do plano free nao hibernar.
+# (Regra do free tier: ~7 dias sem acesso ao banco = pausa -> o app da "failed to fetch".)
+# A anon key e PUBLICA por design (quem protege os dados e o RLS no banco); esta request
+# nao le dado nenhum de ninguem — so serve para resetar o contador de inatividade.
+
+on:
+  schedule:
+    - cron: '27 11 * * *' # 11:27 UTC ~= 08:27 no horario de Brasilia (diario)
+  workflow_dispatch: {} # tambem da para rodar na mao no botao "Run workflow"
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST
+        env:
+          SUPABASE_URL: https://exokogdbvmmcaaipiunk.supabase.co
+          SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4b2tvZ2Ridm1tY2FhaXBpdW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMDI3NDIsImV4cCI6MjA5Nzg3ODc0Mn0.McEJFJ0XDcGrtU55Ft6m3r6cmf09WZAiLGZe21phXNo
+        run: |
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            "$SUPABASE_URL/rest/v1/categories?select=id&limit=1")
+          echo "resposta HTTP: $code"
+          if [ -z "$code" ] || [ "$code" = "000" ] || [ "$code" -ge 500 ]; then
+            echo "::error::ping falhou — o Supabase pode estar fora do ar (HTTP $code)"
+            exit 1
+          fi
+          echo "ok — supabase acordado (HTTP $code)"
