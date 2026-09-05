@@ -1,22 +1,25 @@
 import { useState } from 'react'
 import { Icon } from './Icon'
-import { BLOCK_LABELS, DEFAULT_ORDER, type BlockKey } from '../lib/customization'
+import { ACCENTS, BLOCK_LABELS, DEFAULT_ORDER, applyAccent, type Accent, type BlockKey } from '../lib/customization'
 
 export function Customize({
   caret,
   quickActions,
+  accent,
   order,
   onClose,
   onSave,
 }: {
   caret: boolean
   quickActions: boolean
+  accent: Accent
   order: BlockKey[]
   onClose: () => void
-  onSave: (data: { caret: boolean; quickActions: boolean; order: BlockKey[] }) => void
+  onSave: (data: { caret: boolean; quickActions: boolean; accent: Accent; order: BlockKey[] }) => void
 }) {
   const [caretDraft, setCaretDraft] = useState(caret)
   const [quickDraft, setQuickDraft] = useState(quickActions)
+  const [accentDraft, setAccentDraft] = useState<Accent>(accent)
   const [orderDraft, setOrderDraft] = useState<BlockKey[]>(order)
 
   function move(i: number, dir: -1 | 1) {
@@ -37,6 +40,25 @@ export function Customize({
           </button>
         </div>
         <p className="muted small">deixa o painel com a sua cara — fica salvo neste aparelho.</p>
+
+        <div className="set-section">
+          <span className="set-label">// acento do painel</span>
+          <div className="chips">
+            {ACCENTS.map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                className={'chip' + (accentDraft === a.id ? ' active' : '')}
+                onClick={() => {
+                  setAccentDraft(a.id)
+                  applyAccent(a.id) // preview na hora; sem salvar, volta ao anterior
+                }}
+              >
+                <i className={'chip-dot acc-' + a.id} aria-hidden="true" /> {a.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="set-section">
           <span className="set-label">// cursor piscando</span>
@@ -114,7 +136,7 @@ export function Customize({
             </button>
             <button
               className="btn primary"
-              onClick={() => onSave({ caret: caretDraft, quickActions: quickDraft, order: orderDraft })}
+              onClick={() => onSave({ caret: caretDraft, quickActions: quickDraft, accent: accentDraft, order: orderDraft })}
               title="salvar"
               aria-label="salvar"
             >

@@ -39,9 +39,13 @@ import {
   loadOrder,
   loadCaret,
   loadQuickActions,
+  loadAccent,
   saveOrder,
   saveCaret,
   saveQuickActions,
+  saveAccent,
+  applyAccent,
+  type Accent,
   type BlockKey,
 } from '../../lib/customization'
 import { QuickActions } from '../QuickActions'
@@ -106,6 +110,7 @@ export function Dashboard({ session }: { session: Session }) {
   // customização do layout (salva neste aparelho)
   const [caret, setCaret] = useState(loadCaret())
   const [quickActions, setQuickActions] = useState(loadQuickActions())
+  const [accent, setAccent] = useState<Accent>(loadAccent())
   const [order, setOrder] = useState<BlockKey[]>(loadOrder())
 
   // reordenar seções só faz sentido no empilhado do celular; no desktop o layout é fixo (2-col)
@@ -318,10 +323,12 @@ export function Dashboard({ session }: { session: Session }) {
           theme={theme}
           caret={caret}
           quickActions={quickActions}
+          accent={accent}
           showCaretToggle={!isMobile}
           onPreview={previewTheme}
           onClose={() => {
             previewTheme(theme) // descarta o preview, volta ao tema salvo
+            applyAccent(accent)
             setShowSettings(false)
           }}
           onSave={async (data) => {
@@ -329,6 +336,8 @@ export function Dashboard({ session }: { session: Session }) {
             saveCaret(data.caret)
             setQuickActions(data.quickActions)
             saveQuickActions(data.quickActions)
+            setAccent(data.accent)
+            saveAccent(data.accent)
             if (await saveProfile({ profession: data.profession, hobbies: data.hobbies, theme: data.theme })) {
               setTheme(data.theme)
               applyTheme(data.theme)
@@ -386,13 +395,19 @@ export function Dashboard({ session }: { session: Session }) {
         <Customize
           caret={caret}
           quickActions={quickActions}
+          accent={accent}
           order={order}
-          onClose={() => setShowCustomize(false)}
-          onSave={({ caret: c, quickActions: q, order: o }) => {
+          onClose={() => {
+            applyAccent(accent) // descarta o preview do acento
+            setShowCustomize(false)
+          }}
+          onSave={({ caret: c, quickActions: q, accent: a, order: o }) => {
             setCaret(c)
             saveCaret(c)
             setQuickActions(q)
             saveQuickActions(q)
+            setAccent(a)
+            saveAccent(a)
             setOrder(o)
             saveOrder(o)
             setShowCustomize(false)

@@ -58,6 +58,38 @@ export function saveCaret(on: boolean) {
   }
 }
 
+/** acento do painel (cockpit): ciano por padrão; azul e verde como opção — vira data-accent no <html> */
+export type Accent = 'ciano' | 'azul' | 'verde'
+export const ACCENTS: { id: Accent; label: string }[] = [
+  { id: 'ciano', label: 'ciano' },
+  { id: 'azul', label: 'azul' },
+  { id: 'verde', label: 'verde' },
+]
+const ACCENT_KEY = 'fin-accent'
+
+export function loadAccent(): Accent {
+  try {
+    const v = localStorage.getItem(ACCENT_KEY)
+    return v === 'azul' || v === 'verde' ? v : 'ciano'
+  } catch {
+    return 'ciano'
+  }
+}
+
+/** só muda a aparência (preview nos painéis); não grava */
+export function applyAccent(a: Accent) {
+  document.documentElement.dataset.accent = a
+}
+
+export function saveAccent(a: Accent) {
+  applyAccent(a)
+  try {
+    localStorage.setItem(ACCENT_KEY, a)
+  } catch {
+    /* ignora */
+  }
+}
+
 /** atalhos flutuantes (botão + com notas/calculadora) ligados por padrão; só o valor 'off' desliga */
 export function loadQuickActions(): boolean {
   return localStorage.getItem(QUICK_KEY) !== 'off'
