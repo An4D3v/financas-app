@@ -2,15 +2,15 @@ import { useEffect, useRef, useState } from 'react'
 
 export const UNDO_DURATION = 5000 // ms até a exclusão virar definitiva
 
-type Pending = { id: number; message: string; onUndo: () => void }
+type Pending = { id: number; message: string; onUndo?: () => void }
 
-/** mostra um toast "desfazer" por alguns segundos; some sozinho (a exclusão já foi pro banco) */
+/** mostra um toast por alguns segundos e some sozinho — com "desfazer" (exclusões) ou só aviso (metas) */
 export function useUndo() {
   const [pending, setPending] = useState<Pending | null>(null)
   const timer = useRef<number | null>(null)
   const seq = useRef(0)
 
-  function show(message: string, onUndo: () => void) {
+  function show(message: string, onUndo?: () => void) {
     if (timer.current) clearTimeout(timer.current)
     const id = ++seq.current
     setPending({ id, message, onUndo })
@@ -19,7 +19,7 @@ export function useUndo() {
 
   function undo() {
     if (timer.current) clearTimeout(timer.current)
-    pending?.onUndo()
+    pending?.onUndo?.()
     setPending(null)
   }
 

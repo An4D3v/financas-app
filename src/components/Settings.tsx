@@ -1,6 +1,7 @@
 import { useState, type KeyboardEvent } from 'react'
 import type { ThemePref } from '../lib/theme'
 import { Icon, type IconName } from './Icon'
+import { ACCENTS, applyAccent, type Accent } from '../lib/customization'
 
 const MAX_HOBBIES = 4
 
@@ -17,6 +18,7 @@ export function Settings({
   theme,
   caret,
   quickActions,
+  accent,
   showCaretToggle,
   onPreview,
   onClose,
@@ -28,6 +30,7 @@ export function Settings({
   theme: ThemePref
   caret: boolean
   quickActions: boolean
+  accent: Accent
   showCaretToggle: boolean
   onPreview: (t: ThemePref) => void
   onClose: () => void
@@ -37,6 +40,7 @@ export function Settings({
     theme: ThemePref
     caret: boolean
     quickActions: boolean
+    accent: Accent
   }) => Promise<void>
 }) {
   const [profession, setProfession] = useState(initProfession)
@@ -44,6 +48,7 @@ export function Settings({
   const [themeDraft, setThemeDraft] = useState(theme)
   const [caretDraft, setCaretDraft] = useState(caret)
   const [quickDraft, setQuickDraft] = useState(quickActions)
+  const [accentDraft, setAccentDraft] = useState<Accent>(accent)
   const [draft, setDraft] = useState('')
   const [saving, setSaving] = useState(false)
   const full = hobbies.length >= MAX_HOBBIES
@@ -70,6 +75,7 @@ export function Settings({
       theme: themeDraft,
       caret: caretDraft,
       quickActions: quickDraft,
+      accent: accentDraft,
     })
     setSaving(false)
   }
@@ -93,12 +99,33 @@ export function Settings({
                 key={t.id}
                 type="button"
                 className={'chip' + (themeDraft === t.id ? ' active' : '')}
+                aria-pressed={themeDraft === t.id}
                 onClick={() => {
                   setThemeDraft(t.id)
                   onPreview(t.id)
                 }}
               >
                 <Icon name={t.icon} /> {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="set-section">
+          <span className="set-label">// acento do painel</span>
+          <div className="chips accent-chips">
+            {ACCENTS.map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                className={'chip' + (accentDraft === a.id ? ' active' : '')}
+                aria-pressed={accentDraft === a.id}
+                onClick={() => {
+                  setAccentDraft(a.id)
+                  applyAccent(a.id) // preview na hora; sem salvar, volta ao anterior
+                }}
+              >
+                <i className={'chip-dot acc-' + a.id} aria-hidden="true" /> {a.label}
               </button>
             ))}
           </div>

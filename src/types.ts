@@ -26,10 +26,10 @@ export type Transaction = {
   created_at: string
 }
 
-/** meta (orçamento) mensal de uma categoria */
+/** meta (orçamento) mensal de uma categoria — ou o teto geral do mês, quando category_id é nulo */
 export type Budget = {
   id: string
-  category_id: string
+  category_id: string | null
   amount: number
   categories?: { name: string; color: string | null } | null
 }

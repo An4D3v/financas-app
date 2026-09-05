@@ -226,29 +226,33 @@ export function useFinanceData(session: Session) {
     return true
   }
 
-  /** salva o conjunto desejado de metas: upsert das informadas e remove as que saíram */
-  async function saveBudgets(desired: { category_id: string; amount: number }[]): Promise<boolean> {
-    const keep = new Set(desired.map((d) => d.category_id))
-    const toDelete = budgets.filter((b) => !keep.has(b.category_id)).map((b) => b.id)
-    if (desired.length) {
-      const rows = desired.map((d) => ({
-        user_id: session.user.id,
-        category_id: d.category_id,
-        amount: d.amount,
-        updated_at: new Date().toISOString(),
-      }))
-      const { error } = await supabase.from('budgets').upsert(rows, { onConflict: 'user_id,category_id' })
-      if (error) {
-        alert(error.message)
-        return false
-      }
+  /** salva as metas: upsert das categorias e do teto do mês (linha sem categoria) + remove o que saiu — idempotente */
+  async function saveBudgets(desired: { category_id: string; amount: number }[], total: number | null): Promise<boolean> {
+    // falha no meio: recarrega do banco p/ o estado local não ficar atrás do que já foi gravado
+    const fail = async (msg: string) => {
+      alert(msg)
+      await reload()
+      return false
     }
+    const now = new Date().toISOString()
+    const keep = new Set(desired.map((d) => d.category_id))
+    const wantTotal = total != null && total > 0
+    // o UNIQUE (user_id, category_id) é NULLS NOT DISTINCT, então o upsert cobre a linha do teto também
+    const rows: { user_id: string; category_id: string | null; amount: number; updated_at: string }[] = desired.map((d) => ({
+      user_id: session.user.id,
+      category_id: d.category_id,
+      amount: d.amount,
+      updated_at: now,
+    }))
+    if (wantTotal) rows.push({ user_id: session.user.id, category_id: null, amount: total, updated_at: now })
+    if (rows.length) {
+      const { error } = await supabase.from('budgets').upsert(rows, { onConflict: 'user_id,category_id' })
+      if (error) return fail(error.message)
+    }
+    const toDelete = budgets.filter((b) => (b.category_id == null ? !wantTotal : !keep.has(b.category_id))).map((b) => b.id)
     if (toDelete.length) {
       const { error } = await supabase.from('budgets').delete().in('id', toDelete)
-      if (error) {
-        alert(error.message)
-        return false
-      }
+      if (error) return fail(error.message)
     }
     await reload()
     return true

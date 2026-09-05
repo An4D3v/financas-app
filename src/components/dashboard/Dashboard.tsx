@@ -39,9 +39,13 @@ import {
   loadOrder,
   loadCaret,
   loadQuickActions,
+  loadAccent,
   saveOrder,
   saveCaret,
   saveQuickActions,
+  saveAccent,
+  applyAccent,
+  type Accent,
   type BlockKey,
 } from '../../lib/customization'
 import { QuickActions } from '../QuickActions'
@@ -106,6 +110,7 @@ export function Dashboard({ session }: { session: Session }) {
   // customização do layout (salva neste aparelho)
   const [caret, setCaret] = useState(loadCaret())
   const [quickActions, setQuickActions] = useState(loadQuickActions())
+  const [accent, setAccent] = useState<Accent>(loadAccent())
   const [order, setOrder] = useState<BlockKey[]>(loadOrder())
 
   // reordenar seções só faz sentido no empilhado do celular; no desktop o layout é fixo (2-col)
@@ -148,7 +153,51 @@ export function Dashboard({ session }: { session: Session }) {
     [periodTxs, catFilter],
   )
   const label = periodLabel(period, customFrom, customTo)
-  const budgetRows = useMemo(() => computeBudgets(budgets, txs), [budgets, txs])
+  // "hoje" vivo: num PWA aberto por dias, o marcador/ritmo das metas não pode congelar no dia do último dado
+  const [today, setToday] = useState(todayStr())
+  useEffect(() => {
+    const tick = () => setToday(todayStr())
+    const id = window.setInterval(tick, 60_000)
+    document.addEventListener('visibilitychange', tick)
+    return () => {
+      window.clearInterval(id)
+      document.removeEventListener('visibilitychange', tick)
+    }
+  }, [])
+  const budgetStats = useMemo(() => computeBudgets(budgets, txs, today), [budgets, txs, today])
+
+  // avisos discretos de meta: uma vez por mês por meta, ao passar de 80% e ao estourar (guardado no aparelho)
+  useEffect(() => {
+    if (undo.pending?.onUndo) return // não atropela um "desfazer" em andamento; o aviso volta na próxima atualização
+    const ym = today.slice(0, 7)
+    const KEY = 'fin-budget-alerts'
+    let seen: Record<string, Record<string, string>> = {}
+    try {
+      seen = JSON.parse(localStorage.getItem(KEY) ?? '{}')
+    } catch {
+      /* ignora */
+    }
+    const month = seen[ym] ?? {}
+    const all = budgetStats.total ? [budgetStats.total, ...budgetStats.rows] : budgetStats.rows
+    for (const r of all) {
+      if (r.state === 'ok') continue
+      const k = r.category_id ?? 'total'
+      if (month[k] === 'over' || month[k] === r.state) continue
+      month[k] = r.state
+      undo.show(
+        r.category_id == null
+          ? r.state === 'over' ? 'estourou o teto do mês' : 'passou de 80% do teto do mês'
+          : r.state === 'over' ? `${r.name} estourou a meta do mês` : `${r.name} passou de 80% da meta`,
+      )
+      try {
+        localStorage.setItem(KEY, JSON.stringify({ [ym]: month })) // só o mês corrente: o resto envelheceu
+      } catch {
+        /* ignora */
+      }
+      break // um aviso por vez; o próximo sai na próxima atualização dos dados
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [budgetStats, today])
   const usedCategoryIds = useMemo(
     () => [...new Set(txs.map((t) => t.category_id).filter((id): id is string => !!id))],
     [txs],
@@ -182,8 +231,8 @@ export function Dashboard({ session }: { session: Session }) {
       case 'chart':
         return <CategoryChart key="chart" data={pie} timeSeries={timeSeries} periodLabel={label} />
       case 'budget':
-        return budgetRows.length ? (
-          <BudgetCard key="budget" rows={budgetRows} onEdit={() => setShowBudget(true)} />
+        return budgetStats.rows.length || budgetStats.total ? (
+          <BudgetCard key="budget" stats={budgetStats} onEdit={() => setShowBudget(true)} />
         ) : null
       case 'summary':
         return txs.length > 0 ? (
@@ -318,10 +367,12 @@ export function Dashboard({ session }: { session: Session }) {
           theme={theme}
           caret={caret}
           quickActions={quickActions}
+          accent={accent}
           showCaretToggle={!isMobile}
           onPreview={previewTheme}
           onClose={() => {
             previewTheme(theme) // descarta o preview, volta ao tema salvo
+            applyAccent(accent)
             setShowSettings(false)
           }}
           onSave={async (data) => {
@@ -329,6 +380,8 @@ export function Dashboard({ session }: { session: Session }) {
             saveCaret(data.caret)
             setQuickActions(data.quickActions)
             saveQuickActions(data.quickActions)
+            setAccent(data.accent)
+            saveAccent(data.accent)
             if (await saveProfile({ profession: data.profession, hobbies: data.hobbies, theme: data.theme })) {
               setTheme(data.theme)
               applyTheme(data.theme)
@@ -356,6 +409,7 @@ export function Dashboard({ session }: { session: Session }) {
           cats={cats}
           budgets={budgets}
           usedCategoryIds={usedCategoryIds}
+          txs={txs}
           onClose={() => setShowBudget(false)}
           onSave={saveBudgets}
         />
@@ -386,13 +440,19 @@ export function Dashboard({ session }: { session: Session }) {
         <Customize
           caret={caret}
           quickActions={quickActions}
+          accent={accent}
           order={order}
-          onClose={() => setShowCustomize(false)}
-          onSave={({ caret: c, quickActions: q, order: o }) => {
+          onClose={() => {
+            applyAccent(accent) // descarta o preview do acento
+            setShowCustomize(false)
+          }}
+          onSave={({ caret: c, quickActions: q, accent: a, order: o }) => {
             setCaret(c)
             saveCaret(c)
             setQuickActions(q)
             saveQuickActions(q)
+            setAccent(a)
+            saveAccent(a)
             setOrder(o)
             saveOrder(o)
             setShowCustomize(false)
@@ -406,7 +466,9 @@ export function Dashboard({ session }: { session: Session }) {
 
       {!anyModal && <ScrollTopButton />}
       {quickActions && !anyModal && <QuickActions onNotes={() => setShowNotes(true)} />}
-      {undo.pending && <Toast key={undo.pending.id} message={undo.pending.message} onUndo={undo.undo} />}
+      {undo.pending && (
+        <Toast key={undo.pending.id} message={undo.pending.message} onUndo={undo.pending.onUndo ? undo.undo : undefined} />
+      )}
     </div>
   )
 }

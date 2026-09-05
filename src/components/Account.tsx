@@ -116,7 +116,7 @@ export function Account({
             </button>
           </div>
           <p className="muted small">
-            aparece como <b className="green">{toHandle(uname)}</b>@finanças:~$
+            aparece como <b>{toHandle(uname)}</b>@finanças<span className="accent">:~$</span>
           </p>
           {umsg && <p className="msg">{umsg}</p>}
         </div>

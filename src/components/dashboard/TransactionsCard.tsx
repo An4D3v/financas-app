@@ -19,7 +19,7 @@ export function TransactionsCard({ txs, cats, catFilter, onCatFilter, onDelete, 
   return (
     <section className="card">
       <div className="card-head">
-        <h2 className="ttl">&gt;_ lançamentos</h2>
+        <h2 className="ttl">lançamentos</h2>
         <select className="cat-filter" value={catFilter} onChange={(e) => onCatFilter(e.target.value)}>
           <option value="">todas categorias</option>
           {cats.map((c) => (

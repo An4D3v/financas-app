@@ -14,8 +14,8 @@ export default defineConfig({
         short_name: 'finanças',
         description: 'controle de finanças pessoais no estilo terminal — a foto da nota vira lançamento.',
         lang: 'pt-BR',
-        theme_color: '#0d1117',
-        background_color: '#0d1117',
+        theme_color: '#141414',
+        background_color: '#141414',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
@@ -35,6 +35,23 @@ export default defineConfig({
         // sem ignorar ?app=1, a navegação do onboarding daria cache-miss no precache (network-only; offline quebraria)
         ignoreURLParametersMatching: [/^app$/, /^utm_/, /^fbclid$/],
         cleanupOutdatedCaches: true,
+        // fontes do Google (Fira Code / Fira Sans) em cache p/ o app instalado funcionar offline com a tipografia certa
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'google-fonts-css', expiration: { maxEntries: 8, maxAgeSeconds: 60 * 60 * 24 * 365 } },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-files',
+              expiration: { maxEntries: 24, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
       // o service worker não roda em dev (evita cache atrapalhando o desenvolvimento)
       devOptions: { enabled: false },

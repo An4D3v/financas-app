@@ -61,7 +61,7 @@ export function EntryForm({ cats, onAdd, onScanned }: Props) {
 
   return (
     <section className="card">
-      <h2 className="ttl">&gt;_ novo lançamento</h2>
+      <h2 className="ttl">novo lançamento</h2>
       <input
         ref={fileRef}
         type="file"

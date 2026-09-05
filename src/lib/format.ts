@@ -3,33 +3,51 @@
 /** formata número como moeda BRL: 1234.5 -> "R$ 1.234,50" */
 export const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
-/** converte um valor digitado ("50", "50,5", "50.5") em número (0 se inválido) */
-export const parseAmount = (raw: string) => Number(raw.replace(',', '.')) || 0
-
-/** normaliza o valor digitado para "X,XX" (ex.: "50" -> "50,00"); vazio continua vazio */
-export function maskMoney(raw: string): string {
+/**
+ * "1.234,56" / "1234,56" / "1234.56" / "1.234" / "1.5" -> número.
+ * com vírgula, os pontos são milhar; sem vírgula, "1.234" (grupos de 3) é milhar e "1.5" é decimal.
+ */
+function toNumber(raw: string): number {
   const s = raw.trim()
-  if (!s) return ''
-  const n = Number(s.replace(',', '.'))
-  if (!Number.isFinite(n)) return raw // valor estranho: deixa como está p/ o usuário corrigir
+  const normalized = s.includes(',')
+    ? s.replace(/\./g, '').replace(',', '.')
+    : /^-?\d{1,3}(\.\d{3})+$/.test(s)
+      ? s.replace(/\./g, '')
+      : s
+  return Number(normalized)
+}
+
+/** converte um valor digitado ("50", "50,5", "50.5", "1.234,56") em número (0 se inválido ou negativo) */
+export const parseAmount = (raw: string) => Math.max(0, toNumber(raw)) || 0
+
+/** normaliza o valor digitado para "X,XX" (ex.: "50" -> "50,00"); vazio continua vazio; estranho/negativo fica como está */
+export function maskMoney(raw: string): string {
+  if (!raw.trim()) return ''
+  const n = toNumber(raw)
+  if (!Number.isFinite(n) || n < 0) return raw // deixa como está p/ o usuário corrigir
   return n.toFixed(2).replace('.', ',')
 }
 
-/** data de hoje em ISO curto (YYYY-MM-DD) */
-export const todayStr = () => new Date().toISOString().slice(0, 10)
+/** Date -> YYYY-MM-DD no fuso LOCAL (toISOString é UTC: à noite no Brasil já seria o dia seguinte) */
+function localIso(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
-/** data de N dias atrás (YYYY-MM-DD) */
+/** data de hoje em ISO curto (YYYY-MM-DD), no fuso local */
+export const todayStr = () => localIso(new Date())
+
+/** data de N dias atrás (YYYY-MM-DD), no fuso local */
 export function daysAgoStr(n: number): string {
   const d = new Date()
   d.setDate(d.getDate() - n)
-  return d.toISOString().slice(0, 10)
+  return localIso(d)
 }
 
 /** desloca uma data (YYYY-MM-DD) em N dias (N negativo = passado) */
 export function addDays(dateStr: string, n: number): string {
   const d = new Date(dateStr + 'T00:00:00')
   d.setDate(d.getDate() + n)
-  return d.toISOString().slice(0, 10)
+  return localIso(d)
 }
 
 /** "2026-06-24" -> "24/06" */

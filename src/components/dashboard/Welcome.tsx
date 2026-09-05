@@ -4,7 +4,7 @@ import { Icon } from '../Icon'
 export function Welcome() {
   return (
     <section className="card welcome">
-      <h2 className="ttl">&gt;_ bem-vindo(a)!</h2>
+      <h2 className="ttl">bem-vindo(a)!</h2>
       <p className="small">seu painel tá zerado — bora dar o primeiro passo:</p>
       <ul className="insights" style={{ marginTop: 10 }}>
         <li className="insight">

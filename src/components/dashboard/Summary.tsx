@@ -15,7 +15,7 @@ type Props = {
 export function Summary({ insights, saldo, gastos, period, periodLabel, hasPeriodTxs }: Props) {
   return (
     <section className="card">
-      <h2 className="ttl">&gt;_ resumo · {periodLabel}</h2>
+      <h2 className="ttl">resumo · {periodLabel}</h2>
       {!hasPeriodTxs ? (
         <p className="muted small">sem lançamentos nesse período pra resumir ainda.</p>
       ) : (

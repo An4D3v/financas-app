@@ -47,7 +47,7 @@ function TxRow({
 
   return (
     <li className="tx">
-      <span className="dot" style={{ background: tx.categories?.color ?? '#8B949E' }} />
+      <span className="dot" style={{ background: tx.categories?.color ?? 'var(--muted)' }} />
 
       {edit === 'date' ? (
         <input

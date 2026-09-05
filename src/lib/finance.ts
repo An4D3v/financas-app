@@ -9,7 +9,31 @@ export type Period = 'dia' | 'semana' | 'mes' | 'tudo' | 'custom'
 
 export type PieSlice = { name: string; value: number; color: string }
 
-export type BudgetRow = { category_id: string; name: string; color: string; limit: number; spent: number; pct: number }
+// ----- metas (orçamento) -----
+export type BudgetState = 'ok' | 'warn' | 'over'
+/** ritmo do gasto no mês em relação ao esperado até hoje (abaixo = bom) */
+export type BudgetPace = 'adiantado' | 'no-ritmo' | 'acima'
+/** aderência num mês anterior: bateu, estourou ou não há dado (app sem uso naquele mês) */
+export type Adherence = 'met' | 'missed' | 'none'
+export type BudgetRow = {
+  category_id: string | null // null = teto geral do mês
+  name: string
+  color: string
+  limit: number
+  spent: number
+  pct: number
+  remaining: number // limite − gasto (negativo quando estourou)
+  state: BudgetState
+  pace: BudgetPace | null // null nos 2 primeiros dias (cedo demais p/ julgar)
+  projected: number | null // gasto projetado p/ o fim do mês, no ritmo atual
+  todayPct: number // posição do "hoje" na barra (0–100)
+  history: Adherence[] // 3 meses anteriores, do mais antigo p/ o mais recente
+  avg3: number // média dos meses anteriores EM QUE O APP FOI USADO (até 3)
+  avgMonths: number // quantos meses entraram na média (0–3)
+  last: number // gasto do mês passado
+}
+export type BudgetStats = { total: BudgetRow | null; rows: BudgetRow[]; worst: BudgetState; sumLimits: number }
+export type BudgetHint = { avg3: number; months: number; last: number; current: number }
 
 export type Totals = { renda: number; gastos: number; saldo: number }
 
@@ -65,29 +89,156 @@ export function computePie(txs: Transaction[]): PieSlice[] {
   return [...byCategory.values()].sort((a, b) => b.value - a.value)
 }
 
-/** progresso das metas no MÊS corrente (independe do filtro de período), do mais estourado p/ o menos */
-export function computeBudgets(budgets: Budget[], txs: Transaction[]): BudgetRow[] {
-  const ym = todayStr().slice(0, 7)
-  const spentByCat = new Map<string, number>()
+const TOTAL_KEY = '__total__'
+
+/** desloca um YYYY-MM em n meses (n negativo = passado) */
+export function shiftYm(ym: string, n: number): string {
+  const d = new Date(Number(ym.slice(0, 4)), Number(ym.slice(5, 7)) - 1 + n, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+export function daysInMonth(ym: string): number {
+  return new Date(Number(ym.slice(0, 4)), Number(ym.slice(5, 7)), 0).getDate()
+}
+
+/** saídas por categoria (e o total em TOTAL_KEY) em cada um dos meses pedidos */
+function spendByMonth(txs: Transaction[], months: string[]): Map<string, Map<string, number>> {
+  const out = new Map(months.map((m) => [m, new Map<string, number>()]))
   for (const t of txs) {
-    if (t.type !== 'saida' || !t.category_id) continue
-    if (t.occurred_on.slice(0, 7) !== ym) continue
-    spentByCat.set(t.category_id, (spentByCat.get(t.category_id) ?? 0) + Number(t.amount))
+    if (t.type !== 'saida') continue
+    const bucket = out.get(t.occurred_on.slice(0, 7))
+    if (!bucket) continue
+    const v = Number(t.amount)
+    bucket.set(TOTAL_KEY, (bucket.get(TOTAL_KEY) ?? 0) + v)
+    if (t.category_id) bucket.set(t.category_id, (bucket.get(t.category_id) ?? 0) + v)
   }
-  return budgets
-    .map((b) => {
-      const limit = Number(b.amount)
-      const spent = spentByCat.get(b.category_id) ?? 0
-      return {
-        category_id: b.category_id,
-        name: b.categories?.name ?? 'sem categoria',
-        color: b.categories?.color ?? NO_CATEGORY_COLOR,
+  return out
+}
+
+/** os 3 meses anteriores + o corrente, em ordem cronológica */
+function budgetMonths(today: string): string[] {
+  const ym = today.slice(0, 7)
+  return [shiftYm(ym, -3), shiftYm(ym, -2), shiftYm(ym, -1), ym]
+}
+
+function stateOf(pct: number): BudgetState {
+  return pct >= 100 ? 'over' : pct >= 80 ? 'warn' : 'ok'
+}
+
+/** média de `key` só nos meses em que houve alguma saída no app (senão quem começou mês passado veria a média ÷ 3) */
+function avgUsed(byMonth: Map<string, Map<string, number>>, months: string[], key: string): { avg: number; n: number } {
+  const used = months.filter((m) => (byMonth.get(m)?.get(TOTAL_KEY) ?? 0) > 0)
+  if (!used.length) return { avg: 0, n: 0 }
+  return { avg: used.reduce((s, m) => s + (byMonth.get(m)?.get(key) ?? 0), 0) / used.length, n: used.length }
+}
+
+function buildRow(
+  key: string,
+  name: string,
+  color: string,
+  limit: number,
+  months: string[],
+  byMonth: Map<string, Map<string, number>>,
+  today: string,
+): BudgetRow {
+  const ym = today.slice(0, 7)
+  const day = Number(today.slice(8, 10))
+  const frac = day / daysInMonth(ym)
+  const get = (m: string, k: string) => byMonth.get(m)?.get(k) ?? 0
+  const prev = months.slice(0, 3)
+  const prevSpent = prev.map((m) => get(m, key))
+  const spent = get(ym, key)
+  const pct = limit > 0 ? (spent / limit) * 100 : 0
+
+  // ritmo e projeção: só a partir do 3º dia — antes disso qualquer compra vira "estouro projetado"
+  let pace: BudgetPace | null = null
+  let projected: number | null = null
+  if (limit > 0 && day >= 3) {
+    const expected = limit * frac
+    pace = spent <= expected * 0.9 ? 'adiantado' : spent <= expected * 1.1 ? 'no-ritmo' : 'acima'
+    projected = Math.round(spent / frac)
+  }
+
+  // aderência: usa o limite ATUAL nos meses anteriores (o histórico de limites não é guardado);
+  // mês sem NENHUMA saída no app = sem dado, não "bateu"
+  const history: Adherence[] = prev.map((m, i) => {
+    if (limit <= 0 || get(m, TOTAL_KEY) <= 0) return 'none'
+    return prevSpent[i] <= limit ? 'met' : 'missed'
+  })
+
+  return {
+    category_id: key === TOTAL_KEY ? null : key,
+    name,
+    color,
+    limit,
+    spent,
+    pct,
+    remaining: limit - spent,
+    state: stateOf(pct),
+    pace,
+    projected,
+    todayPct: frac * 100,
+    history,
+    avg3: avgUsed(byMonth, prev, key).avg,
+    avgMonths: avgUsed(byMonth, prev, key).n,
+    last: prevSpent[2],
+  }
+}
+
+/**
+ * progresso das metas no MÊS corrente (independe do filtro de período): teto geral (se houver)
+ * + categorias da mais estourada p/ a menos, cada uma com ritmo, projeção e aderência.
+ */
+export function computeBudgets(budgets: Budget[], txs: Transaction[], today = todayStr()): BudgetStats {
+  const months = budgetMonths(today)
+  const byMonth = spendByMonth(txs, months)
+  let total: BudgetRow | null = null
+  const rows: BudgetRow[] = []
+  let sumLimits = 0
+  for (const b of budgets) {
+    const limit = Number(b.amount)
+    if (b.category_id == null) {
+      total = buildRow(TOTAL_KEY, 'teto do mês', '', limit, months, byMonth, today)
+      continue
+    }
+    sumLimits += limit
+    rows.push(
+      buildRow(
+        b.category_id,
+        b.categories?.name ?? 'sem categoria',
+        b.categories?.color ?? NO_CATEGORY_COLOR,
         limit,
-        spent,
-        pct: limit > 0 ? (spent / limit) * 100 : 0,
-      }
-    })
-    .sort((a, b) => b.pct - a.pct)
+        months,
+        byMonth,
+        today,
+      ),
+    )
+  }
+  rows.sort((a, b) => b.pct - a.pct)
+  const all = total ? [total, ...rows] : rows
+  const worst: BudgetState = all.some((r) => r.state === 'over') ? 'over' : all.some((r) => r.state === 'warn') ? 'warn' : 'ok'
+  return { total, rows, worst, sumLimits }
+}
+
+/** dicas p/ definir metas: média dos 3 meses anteriores, mês passado e gasto do mês corrente — por categoria e no total */
+export function budgetHints(txs: Transaction[], today = todayStr()): { byCategory: Map<string, BudgetHint>; total: BudgetHint } {
+  const months = budgetMonths(today)
+  const byMonth = spendByMonth(txs, months)
+  const keys = new Set<string>()
+  for (const m of months) for (const k of byMonth.get(m)?.keys() ?? []) keys.add(k)
+  const hint = (k: string): BudgetHint => {
+    const get = (m: string) => byMonth.get(m)?.get(k) ?? 0
+    const { avg, n } = avgUsed(byMonth, months.slice(0, 3), k)
+    return { avg3: avg, months: n, last: get(months[2]), current: get(months[3]) }
+  }
+  const byCategory = new Map<string, BudgetHint>()
+  for (const k of keys) if (k !== TOTAL_KEY) byCategory.set(k, hint(k))
+  return { byCategory, total: hint(TOTAL_KEY) }
+}
+
+/** sugestão de meta a partir da média: arredonda p/ cima na dezena (R$ 412,30 → 420) */
+export function suggestLimit(avg3: number): number | null {
+  return avg3 > 0 ? Math.ceil(avg3 / 10) * 10 : null
 }
 
 /** rótulo curto do período, p/ KPIs e títulos */
