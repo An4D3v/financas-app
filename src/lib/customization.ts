@@ -47,7 +47,11 @@ export function saveOrder(order: BlockKey[]) {
 
 /** cursor piscando ligado por padrão; só o valor 'off' desliga */
 export function loadCaret(): boolean {
-  return localStorage.getItem(CARET_KEY) !== 'off'
+  try {
+    return localStorage.getItem(CARET_KEY) !== 'off'
+  } catch {
+    return true
+  }
 }
 
 export function saveCaret(on: boolean) {
@@ -92,7 +96,11 @@ export function saveAccent(a: Accent) {
 
 /** atalhos flutuantes (botão + com notas/calculadora) ligados por padrão; só o valor 'off' desliga */
 export function loadQuickActions(): boolean {
-  return localStorage.getItem(QUICK_KEY) !== 'off'
+  try {
+    return localStorage.getItem(QUICK_KEY) !== 'off'
+  } catch {
+    return true
+  }
 }
 
 export function saveQuickActions(on: boolean) {

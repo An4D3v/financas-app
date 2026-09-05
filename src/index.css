@@ -105,6 +105,9 @@ body {
 .card { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; margin-bottom: 16px; }
 .kpi { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; transition: border-color 0.15s ease; }
 .kpi:hover { border-color: var(--line-strong); }
+/* saldo negativo: as cantoneiras do módulo acendem em vermelho (sinal além da cor do número) */
+.kpi-neg { border-color: color-mix(in srgb, var(--bad) 55%, var(--line)); }
+.kpi-neg::before, .kpi-neg::after { border-color: var(--bad); }
 .card::before, .card::after, .kpi::before, .kpi::after, .term::before, .term::after {
   content: ''; position: absolute; width: 8px; height: 8px; border: 1px solid var(--bracket); pointer-events: none;
 }
@@ -124,6 +127,7 @@ body {
 .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
 .kpi .lbl { display: block; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
 .kpi .val { display: block; font-family: var(--mono); font-size: 19px; font-weight: 500; margin-top: 5px; white-space: nowrap; }
+@media (min-width: 681px) and (max-width: 760px) { .kpi .val { font-size: 16px; } } /* 3 colunas apertadas: 16 chars a 19px estouram */
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 /* card do gráfico acompanha a altura do card de "novo lançamento" e rola por dentro */
 .chart-card { display: flex; flex-direction: column; }
@@ -147,6 +151,8 @@ input, select, textarea {
   border-radius: var(--r); padding: 10px 12px; font-size: 14px; width: 100%; font-family: inherit;
 }
 input:focus, select:focus, textarea:focus { outline: 2px solid var(--acc); outline-offset: -1px; border-color: transparent; }
+/* o placeholder padrão do navegador (#757575) fica em 4,0:1 — usa o muted (6,7:1) */
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
 .btn {
   border: 1px solid transparent; border-radius: var(--r); padding: 11px 14px; font-size: 14px; cursor: pointer; font-weight: 500;
   font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -200,6 +206,9 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--acc); outli
 .acc-ciano { background: var(--acc-cy); }
 .acc-azul { background: var(--acc-bl); }
 .acc-verde { background: var(--acc-gr); }
+/* seletor de acento: o chip ativo NÃO se pinta com o acento (a bolinha sumiria na própria cor) — vira contorno */
+.accent-chips .chip.active { background: var(--bg); color: var(--txt); border-color: var(--acc); box-shadow: inset 0 0 0 1px var(--acc); }
+.accent-chips .chip.active .chip-dot { box-shadow: 0 0 0 1px var(--line-strong); }
 .card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .card-head .ttl { margin: 0; }
 .cat-filter { width: auto; max-width: 220px; padding: 7px 10px; font-size: 13px; }
@@ -240,11 +249,16 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--acc); outli
 .term-bar {
   display: flex; align-items: center; gap: 7px; padding: 10px 13px;
   background: color-mix(in srgb, var(--panel) 90%, #000); border-bottom: 1px solid var(--line);
+  border-radius: calc(var(--r) - 1px) calc(var(--r) - 1px) 0 0;
 }
 .tdot { width: 11px; height: 11px; border-radius: 50%; flex: none; }
 .tdot.r { background: #ff5f57; }
 .tdot.y { background: #febc2e; }
 .tdot.g { background: #28c840; }
+/* no claro, as luzes da janela do terminal lavavam (o amarelo sumia a 1,35:1) */
+:root[data-theme="light"] .tdot.r { background: #d63c36; }
+:root[data-theme="light"] .tdot.y { background: #9a7300; }
+:root[data-theme="light"] .tdot.g { background: #1a8a2c; }
 .term-name { margin-left: 8px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
 .term-body { padding: 22px 20px 20px; display: flex; flex-direction: column; gap: 13px; }
 .brand-lg { font-size: 24px; line-height: 1.2; }
@@ -310,6 +324,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--acc); outli
 .tx-edit-desc { width: 140px; }
 .tx-edit-cat { width: auto; max-width: 168px; }
 .tx-edit-val { width: 92px; text-align: right; flex: none; }
+.tx-edit-val, .tx-edit-date, .tx-edit[type="number"] { font-family: var(--mono); } /* número editando continua em mono */
 .tx-type {
   flex: none; width: 22px; height: 22px; padding: 0; border-radius: var(--r);
   display: inline-flex; align-items: center; justify-content: center;
@@ -347,6 +362,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--acc); outli
 .cal-cell.empty { cursor: default; }
 .cal-cell.off { color: var(--muted); opacity: 0.4; cursor: default; }
 .cal-cell.between { background: color-mix(in srgb, var(--acc) 16%, transparent); border-radius: 0; }
+:root[data-theme="light"] .cal-cell.between { background: color-mix(in srgb, var(--acc) 24%, transparent); } /* 16% some no branco */
 .cal-cell.sel { background: var(--acc); color: var(--on-acc); font-weight: 600; }
 .cal-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 9px; }
 .cal-foot > div { display: flex; gap: 8px; align-items: center; }
@@ -366,6 +382,8 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--acc); outli
 .insight { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.45; }
 .ins-ico { flex: none; font-size: 16px; line-height: 1.35; color: var(--acc); }
 .insight b { font-weight: 600; }
+/* dinheiro dentro de frase (resumo) e totais no rodapé de modal também em mono */
+.insight b.green, .insight b.red, .insight b.pink, .insight b.cyan, .insight b.ok, .insight b.bad, .modal-foot b { font-family: var(--mono); font-weight: 500; }
 
 /* seletor de tipo de gráfico (pizza/barras/lista) */
 .chart-chips { flex-wrap: wrap; }
@@ -402,7 +420,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--acc); outli
 /* ── contas fixas (recorrentes) ──────────────────────────────────────────── */
 .rec-list { margin: 8px 0; }
 .rec-item { display: flex; align-items: center; gap: 9px; }
-.rec-item.off { opacity: 0.5; }
+.rec-item.off .rec-desc, .rec-item.off .rec-val { color: var(--muted); } /* apagado por cor, não por opacidade (opacidade .5 caía a 3,4:1) */
 .rec-body { flex: 1; min-width: 0; }
 .rec-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .rec-desc { flex: 1; min-width: 0; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -416,7 +434,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--acc); outli
 .rec-toggle {
   display: inline-flex; align-items: center; vertical-align: -0.15em;
   background: none; border: none; padding: 0; margin: 0 3px 0 6px; cursor: pointer; line-height: 1;
-  font-size: 11px; color: var(--muted); opacity: 0.45;
+  font-size: 11px; color: var(--muted); opacity: 0.7; /* 0.45 dava 2,3:1 no ícone; 0.7 = 3,7:1 */
   transition: color 0.15s ease, opacity 0.15s ease;
 }
 .rec-toggle:hover { opacity: 1; color: var(--acc); }
@@ -499,6 +517,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--acc); outli
 .calc-key:hover { border-color: var(--line-strong); }
 .calc-key.wide { grid-column: span 2; }
 .calc-key.op { background: color-mix(in srgb, var(--acc) 16%, var(--bg)); color: var(--acc); border-color: color-mix(in srgb, var(--acc) 40%, var(--line)); }
+:root[data-theme="light"] .calc-key.op { background: color-mix(in srgb, var(--acc) 8%, var(--bg)); } /* 16% no claro deixava o ciano em 4,26:1 */
 .calc-key.clear { color: var(--bad); }
 
 /* ── bloco de anotações ──────────────────────────────────────────────────── */

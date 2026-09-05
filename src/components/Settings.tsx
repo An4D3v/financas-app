@@ -99,6 +99,7 @@ export function Settings({
                 key={t.id}
                 type="button"
                 className={'chip' + (themeDraft === t.id ? ' active' : '')}
+                aria-pressed={themeDraft === t.id}
                 onClick={() => {
                   setThemeDraft(t.id)
                   onPreview(t.id)
@@ -112,12 +113,13 @@ export function Settings({
 
         <div className="set-section">
           <span className="set-label">// acento do painel</span>
-          <div className="chips">
+          <div className="chips accent-chips">
             {ACCENTS.map((a) => (
               <button
                 key={a.id}
                 type="button"
                 className={'chip' + (accentDraft === a.id ? ' active' : '')}
+                aria-pressed={accentDraft === a.id}
                 onClick={() => {
                   setAccentDraft(a.id)
                   applyAccent(a.id) // preview na hora; sem salvar, volta ao anterior

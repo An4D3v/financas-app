@@ -43,12 +43,13 @@ export function Customize({
 
         <div className="set-section">
           <span className="set-label">// acento do painel</span>
-          <div className="chips">
+          <div className="chips accent-chips">
             {ACCENTS.map((a) => (
               <button
                 key={a.id}
                 type="button"
                 className={'chip' + (accentDraft === a.id ? ' active' : '')}
+                aria-pressed={accentDraft === a.id}
                 onClick={() => {
                   setAccentDraft(a.id)
                   applyAccent(a.id) // preview na hora; sem salvar, volta ao anterior

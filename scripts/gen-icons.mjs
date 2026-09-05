@@ -11,9 +11,9 @@ const bag = `
 // FUNDO TRANSPARENTE, recortado no saco — p/ ícones "any" (atalho do desktop, navegador, taskbar)
 const svgTransparent = `<svg width="512" height="512" viewBox="6 8.5 52 52" xmlns="http://www.w3.org/2000/svg">${bag}</svg>`
 
-// FUNDO ESCURO full-bleed — p/ maskable (Android adaptativo) e apple-touch (iOS), que não aceitam transparência
+// FUNDO ESCURO full-bleed (grafite do cockpit, igual ao --bg) — p/ maskable (Android adaptativo) e apple-touch (iOS), que não aceitam transparência
 const svgDark = `<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-  <rect width="512" height="512" fill="#0d1117"/>
+  <rect width="512" height="512" fill="#141414"/>
   <g transform="translate(48,48) scale(6.5)">${bag}</g>
 </svg>`
 
