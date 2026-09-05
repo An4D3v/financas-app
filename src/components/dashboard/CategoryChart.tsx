@@ -7,7 +7,7 @@ type Props = { data: PieSlice[]; timeSeries: TimeSeries; periodLabel: string }
 type ChartType = 'pizza' | 'barras' | 'colunas' | 'linhas' | 'lista'
 
 const STORE_KEY = 'fin-chart'
-const tooltipStyle = { background: 'var(--panel)', border: '1px solid var(--line)', borderRadius: 8, color: 'var(--txt)' }
+const tooltipStyle = { background: 'var(--panel)', border: '1px solid var(--line)', borderRadius: 2, color: 'var(--txt)', fontFamily: 'var(--mono)', fontSize: 12 }
 
 /** gráfico de gastos por categoria — alterna entre pizza, barras e lista (ranking) */
 export function CategoryChart({ data, timeSeries, periodLabel }: Props) {
@@ -31,7 +31,7 @@ export function CategoryChart({ data, timeSeries, periodLabel }: Props) {
   return (
     <section className="card chart-card">
       <div className="card-head">
-        <h2 className="ttl">&gt;_ gastos por categoria · {periodLabel}</h2>
+        <h2 className="ttl">gastos por categoria · {periodLabel}</h2>
         <div className="chips chart-chips">
           {(['pizza', 'barras', 'colunas', 'linhas', 'lista'] as const).map((t) => (
             <button key={t} type="button" className={'chip' + (type === t ? ' active' : '')} onClick={() => pick(t)}>
@@ -77,7 +77,7 @@ export function CategoryChart({ data, timeSeries, periodLabel }: Props) {
               labelStyle={{ color: 'var(--txt)' }}
               cursor={{ fill: 'var(--line)', fillOpacity: 0.25 }}
             />
-            <Bar dataKey="value" radius={[0, 5, 5, 0]}>
+            <Bar dataKey="value" radius={[0, 2, 2, 0]}>
               {data.map((d, i) => (
                 <Cell key={i} fill={d.color} />
               ))}
@@ -107,7 +107,7 @@ export function CategoryChart({ data, timeSeries, periodLabel }: Props) {
               labelStyle={{ color: 'var(--txt)' }}
               cursor={{ fill: 'var(--line)', fillOpacity: 0.25 }}
             />
-            <Bar dataKey="value" radius={[5, 5, 0, 0]}>
+            <Bar dataKey="value" radius={[2, 2, 0, 0]}>
               {data.map((d, i) => (
                 <Cell key={i} fill={d.color} />
               ))}

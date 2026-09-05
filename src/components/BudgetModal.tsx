@@ -64,7 +64,7 @@ export function BudgetModal({
             {relevant.map((c) => (
               <li key={c.id} className="budget-edit-row">
                 <span className="budget-name">
-                  <span className="rank-dot" style={{ background: c.color ?? '#8b949e' }} />
+                  <span className="rank-dot" style={{ background: c.color ?? 'var(--muted)' }} />
                   {c.name}
                 </span>
                 <input

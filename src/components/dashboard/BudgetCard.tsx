@@ -7,7 +7,7 @@ export function BudgetCard({ rows, onEdit }: { rows: BudgetRow[]; onEdit: () => 
   return (
     <section className="card">
       <div className="card-head">
-        <h2 className="ttl">&gt;_ orçamento · mês</h2>
+        <h2 className="ttl">orçamento · mês</h2>
         <button type="button" className="link" onClick={onEdit}>
           <Icon name="edit" /> ajustar metas
         </button>

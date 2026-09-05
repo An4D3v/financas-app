@@ -16,10 +16,17 @@ export function getStoredTheme(): ThemePref {
   return v === 'light' || v === 'dark' || v === 'system' ? v : 'system'
 }
 
+// a cor da barra do sistema (PWA/mobile) acompanha o tema resolvido
+const THEME_COLOR: Record<'light' | 'dark', string> = { dark: '#141414', light: '#f4f4f3' }
+function paint(mode: 'light' | 'dark') {
+  document.documentElement.dataset.theme = mode
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLOR[mode])
+}
+
 // só muda a aparência na tela (sem gravar) — usado p/ preview no painel de configs
 export function previewTheme(pref: ThemePref) {
   currentPref = pref
-  document.documentElement.dataset.theme = resolved(pref)
+  paint(resolved(pref))
 }
 
 // muda a aparência E grava a preferência (no boot e ao salvar)
@@ -35,10 +42,10 @@ export function applyTheme(pref: ThemePref) {
 // chamada uma vez no boot (main.tsx): aplica o tema salvo e segue o SO quando 'system'
 export function initTheme() {
   currentPref = getStoredTheme()
-  document.documentElement.dataset.theme = resolved(currentPref)
+  paint(resolved(currentPref))
   const mq = window.matchMedia('(prefers-color-scheme: dark)')
   const onChange = () => {
-    if (currentPref === 'system') document.documentElement.dataset.theme = resolved('system')
+    if (currentPref === 'system') paint(resolved('system'))
   }
   if (mq.addEventListener) mq.addEventListener('change', onChange)
   else mq.addListener(onChange)
