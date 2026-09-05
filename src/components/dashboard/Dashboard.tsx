@@ -153,7 +153,36 @@ export function Dashboard({ session }: { session: Session }) {
     [periodTxs, catFilter],
   )
   const label = periodLabel(period, customFrom, customTo)
-  const budgetRows = useMemo(() => computeBudgets(budgets, txs), [budgets, txs])
+  const budgetStats = useMemo(() => computeBudgets(budgets, txs), [budgets, txs])
+
+  // avisos discretos de meta: uma vez por mês por meta, ao passar de 80% e ao estourar (guardado no aparelho)
+  useEffect(() => {
+    const d = new Date()
+    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const KEY = 'fin-budget-alerts'
+    let seen: Record<string, Record<string, string>> = {}
+    try {
+      seen = JSON.parse(localStorage.getItem(KEY) ?? '{}')
+    } catch {
+      /* ignora */
+    }
+    const month = seen[ym] ?? {}
+    const all = budgetStats.total ? [budgetStats.total, ...budgetStats.rows] : budgetStats.rows
+    for (const r of all) {
+      if (r.state === 'ok') continue
+      const k = r.category_id ?? 'total'
+      if (month[k] === 'over' || month[k] === r.state) continue
+      month[k] = r.state
+      undo.show(r.state === 'over' ? `${r.name} estourou a meta do mês` : `${r.name} passou de 80% da meta`)
+      try {
+        localStorage.setItem(KEY, JSON.stringify({ [ym]: month })) // só o mês corrente: o resto envelheceu
+      } catch {
+        /* ignora */
+      }
+      break // um aviso por vez; o próximo sai na próxima atualização dos dados
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [budgetStats])
   const usedCategoryIds = useMemo(
     () => [...new Set(txs.map((t) => t.category_id).filter((id): id is string => !!id))],
     [txs],
@@ -187,8 +216,8 @@ export function Dashboard({ session }: { session: Session }) {
       case 'chart':
         return <CategoryChart key="chart" data={pie} timeSeries={timeSeries} periodLabel={label} />
       case 'budget':
-        return budgetRows.length ? (
-          <BudgetCard key="budget" rows={budgetRows} onEdit={() => setShowBudget(true)} />
+        return budgetStats.rows.length || budgetStats.total ? (
+          <BudgetCard key="budget" stats={budgetStats} onEdit={() => setShowBudget(true)} />
         ) : null
       case 'summary':
         return txs.length > 0 ? (
@@ -365,6 +394,7 @@ export function Dashboard({ session }: { session: Session }) {
           cats={cats}
           budgets={budgets}
           usedCategoryIds={usedCategoryIds}
+          txs={txs}
           onClose={() => setShowBudget(false)}
           onSave={saveBudgets}
         />

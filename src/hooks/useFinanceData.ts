@@ -226,10 +226,27 @@ export function useFinanceData(session: Session) {
     return true
   }
 
-  /** salva o conjunto desejado de metas: upsert das informadas e remove as que saíram */
-  async function saveBudgets(desired: { category_id: string; amount: number }[]): Promise<boolean> {
+  /** salva as metas por categoria (upsert + remove as que saíram) e o teto geral do mês (linha sem categoria) */
+  async function saveBudgets(desired: { category_id: string; amount: number }[], total: number | null): Promise<boolean> {
     const keep = new Set(desired.map((d) => d.category_id))
-    const toDelete = budgets.filter((b) => !keep.has(b.category_id)).map((b) => b.id)
+    const toDelete = budgets.filter((b) => b.category_id != null && !keep.has(b.category_id)).map((b) => b.id)
+    // teto geral: o UNIQUE (user_id, category_id) não cobre nulos, então não dá p/ usar upsert — vai por id
+    const existingTotal = budgets.find((b) => b.category_id == null)
+    if (total != null && total > 0) {
+      const { error } = existingTotal
+        ? await supabase.from('budgets').update({ amount: total, updated_at: new Date().toISOString() }).eq('id', existingTotal.id)
+        : await supabase.from('budgets').insert({ user_id: session.user.id, category_id: null, amount: total })
+      if (error) {
+        alert(error.message)
+        return false
+      }
+    } else if (existingTotal) {
+      const { error } = await supabase.from('budgets').delete().eq('id', existingTotal.id)
+      if (error) {
+        alert(error.message)
+        return false
+      }
+    }
     if (desired.length) {
       const rows = desired.map((d) => ({
         user_id: session.user.id,
