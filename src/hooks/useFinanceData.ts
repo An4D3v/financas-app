@@ -226,46 +226,33 @@ export function useFinanceData(session: Session) {
     return true
   }
 
-  /** salva as metas por categoria (upsert + remove as que saíram) e o teto geral do mês (linha sem categoria) */
+  /** salva as metas: upsert das categorias e do teto do mês (linha sem categoria) + remove o que saiu — idempotente */
   async function saveBudgets(desired: { category_id: string; amount: number }[], total: number | null): Promise<boolean> {
+    // falha no meio: recarrega do banco p/ o estado local não ficar atrás do que já foi gravado
+    const fail = async (msg: string) => {
+      alert(msg)
+      await reload()
+      return false
+    }
+    const now = new Date().toISOString()
     const keep = new Set(desired.map((d) => d.category_id))
-    const toDelete = budgets.filter((b) => b.category_id != null && !keep.has(b.category_id)).map((b) => b.id)
-    // teto geral: o UNIQUE (user_id, category_id) não cobre nulos, então não dá p/ usar upsert — vai por id
-    const existingTotal = budgets.find((b) => b.category_id == null)
-    if (total != null && total > 0) {
-      const { error } = existingTotal
-        ? await supabase.from('budgets').update({ amount: total, updated_at: new Date().toISOString() }).eq('id', existingTotal.id)
-        : await supabase.from('budgets').insert({ user_id: session.user.id, category_id: null, amount: total })
-      if (error) {
-        alert(error.message)
-        return false
-      }
-    } else if (existingTotal) {
-      const { error } = await supabase.from('budgets').delete().eq('id', existingTotal.id)
-      if (error) {
-        alert(error.message)
-        return false
-      }
-    }
-    if (desired.length) {
-      const rows = desired.map((d) => ({
-        user_id: session.user.id,
-        category_id: d.category_id,
-        amount: d.amount,
-        updated_at: new Date().toISOString(),
-      }))
+    const wantTotal = total != null && total > 0
+    // o UNIQUE (user_id, category_id) é NULLS NOT DISTINCT, então o upsert cobre a linha do teto também
+    const rows: { user_id: string; category_id: string | null; amount: number; updated_at: string }[] = desired.map((d) => ({
+      user_id: session.user.id,
+      category_id: d.category_id,
+      amount: d.amount,
+      updated_at: now,
+    }))
+    if (wantTotal) rows.push({ user_id: session.user.id, category_id: null, amount: total, updated_at: now })
+    if (rows.length) {
       const { error } = await supabase.from('budgets').upsert(rows, { onConflict: 'user_id,category_id' })
-      if (error) {
-        alert(error.message)
-        return false
-      }
+      if (error) return fail(error.message)
     }
+    const toDelete = budgets.filter((b) => (b.category_id == null ? !wantTotal : !keep.has(b.category_id))).map((b) => b.id)
     if (toDelete.length) {
       const { error } = await supabase.from('budgets').delete().in('id', toDelete)
-      if (error) {
-        alert(error.message)
-        return false
-      }
+      if (error) return fail(error.message)
     }
     await reload()
     return true

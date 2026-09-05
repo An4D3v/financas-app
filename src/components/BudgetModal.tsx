@@ -11,7 +11,7 @@ function stateOf(pct: number) {
   return pct >= 100 ? 'over' : pct >= 80 ? 'warn' : 'ok'
 }
 
-/** uma linha do modal: nome, sugestão, campo e a dica (média/mês passado + mini-barra do mês corrente) */
+/** uma linha do modal: nome, sugestão, campo e a dica (média / mês passado / este mês + mini-barra do mês corrente) */
 function Row({
   name,
   color,
@@ -31,15 +31,22 @@ function Row({
   const limit = parseAmount(value)
   const current = hint?.current ?? 0
   const pct = limit > 0 ? (current / limit) * 100 : 0
+  const showUse = suggestion != null && limit !== suggestion
+  const hintText =
+    hint && hint.avg3 > 0
+      ? `média ${hint.months}m ${brl(hint.avg3)} · mês passado ${brl(hint.last)}` + (current > 0 ? ` · este mês ${brl(current)}` : '')
+      : current > 0
+        ? `este mês ${brl(current)} · sem histórico anterior`
+        : 'sem histórico ainda'
   return (
     <li className={'bud-row' + (total ? ' total' : '')}>
       <div className="bud-main">
         <span className="budget-name">
-          {!total && <span className="rank-dot" style={{ background: color ?? 'var(--muted)' }} />}
-          {name}
+          <span className="rank-dot" style={total ? { visibility: 'hidden' } : { background: color ?? 'var(--muted)' }} />
+          <span className="nm">{name}</span>
         </span>
-        {suggestion != null && !value && (
-          <button type="button" className="bud-use" onClick={() => onChange(maskMoney(String(suggestion)))} title="usar a sugestão">
+        {showUse && (
+          <button type="button" className="bud-use" onClick={() => onChange(maskMoney(String(suggestion)))} title="usar a sugestão (média dos meses anteriores)">
             usar {suggestion}
           </button>
         )}
@@ -54,15 +61,9 @@ function Row({
         />
       </div>
       <div className="bud-hint">
-        <span>
-          {hint && hint.avg3 > 0
-            ? `média 3m ${brl(hint.avg3)} · mês passado ${brl(hint.last)}`
-            : current > 0
-              ? `este mês ${brl(current)} · sem histórico anterior`
-              : 'sem histórico ainda'}
-        </span>
+        <span>{hintText}</span>
         {limit > 0 && current > 0 && (
-          <span className="bud-mini" title={`este mês: ${brl(current)} de ${brl(limit)}`} aria-hidden="true">
+          <span className="bud-mini" role="img" aria-label={`este mês: ${brl(current)} de ${brl(limit)} (${Math.round(pct)}%)`} title={`este mês: ${brl(current)} de ${brl(limit)}`}>
             <i className={stateOf(pct)} style={{ width: Math.min(100, pct) + '%' }} />
           </span>
         )}
@@ -113,13 +114,13 @@ export function BudgetModal({
   const [saving, setSaving] = useState(false)
 
   const totalDraft = parseAmount(drafts[TOTAL] ?? '')
-  const sumDrafts = expense.reduce((s, c) => s + (parseAmount(drafts[c.id] ?? '') || 0), 0)
+  const sumDrafts = expense.reduce((s, c) => s + parseAmount(drafts[c.id] ?? ''), 0)
   const overCap = totalDraft > 0 && sumDrafts > totalDraft
 
   async function save() {
     const desired = expense
       .map((c) => ({ category_id: c.id, amount: parseAmount(drafts[c.id] ?? '') }))
-      .filter((d) => Number.isFinite(d.amount) && d.amount > 0)
+      .filter((d) => d.amount > 0)
     setSaving(true)
     const ok = await onSave(desired, totalDraft > 0 ? totalDraft : null)
     setSaving(false)
@@ -137,23 +138,16 @@ export function BudgetModal({
             ×
           </button>
         </div>
-        <p className="muted small">um teto pro mês e um por categoria. a sugestão é a média dos últimos 3 meses; em branco = sem meta.</p>
+        <p className="muted small">um teto pro mês e um por categoria. a sugestão é a média dos meses anteriores; em branco = sem meta.</p>
 
         <ul className="budget-edit review-rows">
           <Row name="teto do mês" hint={hints.total} value={drafts[TOTAL] ?? ''} onChange={set(TOTAL)} total />
           {rows.map((c) => (
-            <Row
-              key={c.id}
-              name={c.name}
-              color={c.color}
-              hint={hints.byCategory.get(c.id)}
-              value={drafts[c.id] ?? ''}
-              onChange={set(c.id)}
-            />
+            <Row key={c.id} name={c.name} color={c.color} hint={hints.byCategory.get(c.id)} value={drafts[c.id] ?? ''} onChange={set(c.id)} />
           ))}
           {dormant.length > 0 && (
             <li>
-              <button type="button" className="link bud-more" onClick={() => setShowAll((v) => !v)}>
+              <button type="button" className="link bud-more" aria-expanded={showAll} onClick={() => setShowAll((v) => !v)}>
                 {showAll ? 'menos categorias' : `mais categorias (${dormant.length})`}
               </button>
             </li>
@@ -161,13 +155,13 @@ export function BudgetModal({
         </ul>
 
         {overCap && (
-          <p className="msg">
+          <p className="msg" role="status">
             as metas por categoria somam {brl(sumDrafts)}, acima do teto de {brl(totalDraft)}.
           </p>
         )}
 
         <div className="modal-foot">
-          <span className="muted small">teto no mês corrente</span>
+          <span className="muted small">a barrinha é o gasto deste mês contra a meta digitada</span>
           <div>
             <button type="button" className="icon-btn" onClick={onClose} title="cancelar" aria-label="cancelar">
               <Icon name="x" />

@@ -28,11 +28,12 @@ export type BudgetRow = {
   projected: number | null // gasto projetado p/ o fim do mês, no ritmo atual
   todayPct: number // posição do "hoje" na barra (0–100)
   history: Adherence[] // 3 meses anteriores, do mais antigo p/ o mais recente
-  avg3: number // média dos 3 meses anteriores
+  avg3: number // média dos meses anteriores EM QUE O APP FOI USADO (até 3)
+  avgMonths: number // quantos meses entraram na média (0–3)
   last: number // gasto do mês passado
 }
 export type BudgetStats = { total: BudgetRow | null; rows: BudgetRow[]; worst: BudgetState; sumLimits: number }
-export type BudgetHint = { avg3: number; last: number; current: number }
+export type BudgetHint = { avg3: number; months: number; last: number; current: number }
 
 export type Totals = { renda: number; gastos: number; saldo: number }
 
@@ -124,6 +125,13 @@ function stateOf(pct: number): BudgetState {
   return pct >= 100 ? 'over' : pct >= 80 ? 'warn' : 'ok'
 }
 
+/** média de `key` só nos meses em que houve alguma saída no app (senão quem começou mês passado veria a média ÷ 3) */
+function avgUsed(byMonth: Map<string, Map<string, number>>, months: string[], key: string): { avg: number; n: number } {
+  const used = months.filter((m) => (byMonth.get(m)?.get(TOTAL_KEY) ?? 0) > 0)
+  if (!used.length) return { avg: 0, n: 0 }
+  return { avg: used.reduce((s, m) => s + (byMonth.get(m)?.get(key) ?? 0), 0) / used.length, n: used.length }
+}
+
 function buildRow(
   key: string,
   name: string,
@@ -171,7 +179,8 @@ function buildRow(
     projected,
     todayPct: frac * 100,
     history,
-    avg3: (prevSpent[0] + prevSpent[1] + prevSpent[2]) / 3,
+    avg3: avgUsed(byMonth, prev, key).avg,
+    avgMonths: avgUsed(byMonth, prev, key).n,
     last: prevSpent[2],
   }
 }
@@ -219,7 +228,8 @@ export function budgetHints(txs: Transaction[], today = todayStr()): { byCategor
   for (const m of months) for (const k of byMonth.get(m)?.keys() ?? []) keys.add(k)
   const hint = (k: string): BudgetHint => {
     const get = (m: string) => byMonth.get(m)?.get(k) ?? 0
-    return { avg3: (get(months[0]) + get(months[1]) + get(months[2])) / 3, last: get(months[2]), current: get(months[3]) }
+    const { avg, n } = avgUsed(byMonth, months.slice(0, 3), k)
+    return { avg3: avg, months: n, last: get(months[2]), current: get(months[3]) }
   }
   const byCategory = new Map<string, BudgetHint>()
   for (const k of keys) if (k !== TOTAL_KEY) byCategory.set(k, hint(k))

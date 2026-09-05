@@ -97,9 +97,17 @@ describe('computeBudgets', () => {
 describe('dicas p/ definir metas', () => {
   it('média dos 3 meses anteriores, mês passado e mês corrente, por categoria e no total', () => {
     const h = budgetHints(txs, '2026-09-15')
-    expect(h.byCategory.get(CAT)).toEqual({ avg3: 900, last: 900, current: 500 })
-    expect(h.byCategory.get('c2')).toEqual({ avg3: 0, last: 0, current: 500 })
-    expect(h.total).toEqual({ avg3: 900, last: 900, current: 1000 })
+    expect(h.byCategory.get(CAT)).toEqual({ avg3: 900, months: 3, last: 900, current: 500 })
+    expect(h.byCategory.get('c2')).toEqual({ avg3: 0, months: 3, last: 0, current: 500 })
+    expect(h.total).toEqual({ avg3: 900, months: 3, last: 900, current: 1000 })
+  })
+  it('a média só conta os meses em que o app foi usado (quem começou mês passado não vê ÷3)', () => {
+    const recent = [tx('2026-09-02', 100, CAT), tx('2026-08-05', 900, CAT)]
+    expect(budgetHints(recent, '2026-09-15').byCategory.get(CAT)).toEqual({ avg3: 900, months: 1, last: 900, current: 100 })
+    const r = computeBudgets(budgets, recent, '2026-09-15').rows[0]
+    expect(r.avg3).toBe(900)
+    expect(r.avgMonths).toBe(1)
+    expect(r.history).toEqual(['none', 'none', 'met'])
   })
   it('sugestão arredonda p/ cima na dezena e não sugere sem histórico', () => {
     expect(suggestLimit(412.3)).toBe(420)

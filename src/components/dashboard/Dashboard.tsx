@@ -153,12 +153,23 @@ export function Dashboard({ session }: { session: Session }) {
     [periodTxs, catFilter],
   )
   const label = periodLabel(period, customFrom, customTo)
-  const budgetStats = useMemo(() => computeBudgets(budgets, txs), [budgets, txs])
+  // "hoje" vivo: num PWA aberto por dias, o marcador/ritmo das metas não pode congelar no dia do último dado
+  const [today, setToday] = useState(todayStr())
+  useEffect(() => {
+    const tick = () => setToday(todayStr())
+    const id = window.setInterval(tick, 60_000)
+    document.addEventListener('visibilitychange', tick)
+    return () => {
+      window.clearInterval(id)
+      document.removeEventListener('visibilitychange', tick)
+    }
+  }, [])
+  const budgetStats = useMemo(() => computeBudgets(budgets, txs, today), [budgets, txs, today])
 
   // avisos discretos de meta: uma vez por mês por meta, ao passar de 80% e ao estourar (guardado no aparelho)
   useEffect(() => {
-    const d = new Date()
-    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    if (undo.pending?.onUndo) return // não atropela um "desfazer" em andamento; o aviso volta na próxima atualização
+    const ym = today.slice(0, 7)
     const KEY = 'fin-budget-alerts'
     let seen: Record<string, Record<string, string>> = {}
     try {
@@ -173,7 +184,11 @@ export function Dashboard({ session }: { session: Session }) {
       const k = r.category_id ?? 'total'
       if (month[k] === 'over' || month[k] === r.state) continue
       month[k] = r.state
-      undo.show(r.state === 'over' ? `${r.name} estourou a meta do mês` : `${r.name} passou de 80% da meta`)
+      undo.show(
+        r.category_id == null
+          ? r.state === 'over' ? 'estourou o teto do mês' : 'passou de 80% do teto do mês'
+          : r.state === 'over' ? `${r.name} estourou a meta do mês` : `${r.name} passou de 80% da meta`,
+      )
       try {
         localStorage.setItem(KEY, JSON.stringify({ [ym]: month })) // só o mês corrente: o resto envelheceu
       } catch {
@@ -182,7 +197,7 @@ export function Dashboard({ session }: { session: Session }) {
       break // um aviso por vez; o próximo sai na próxima atualização dos dados
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [budgetStats])
+  }, [budgetStats, today])
   const usedCategoryIds = useMemo(
     () => [...new Set(txs.map((t) => t.category_id).filter((id): id is string => !!id))],
     [txs],
@@ -451,7 +466,9 @@ export function Dashboard({ session }: { session: Session }) {
 
       {!anyModal && <ScrollTopButton />}
       {quickActions && !anyModal && <QuickActions onNotes={() => setShowNotes(true)} />}
-      {undo.pending && <Toast key={undo.pending.id} message={undo.pending.message} onUndo={undo.undo} />}
+      {undo.pending && (
+        <Toast key={undo.pending.id} message={undo.pending.message} onUndo={undo.pending.onUndo ? undo.undo : undefined} />
+      )}
     </div>
   )
 }

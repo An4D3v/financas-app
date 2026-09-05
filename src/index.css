@@ -38,7 +38,7 @@
   --muted: #555558;        /* 7,4:1 no painel */
   --ok: #166534;
   --bad: #b91c1c;
-  --warn: #b45309;
+  --warn: #a54d08;         /* 5,6:1 no branco (o #b45309 passava a 5,02 sem folga p/ texto de 11px) */
   --acc-cy: #0b6e86;       /* ciano calibrado p/ luz: 5,9:1 no painel e como fundo de botão */
   --acc-bl: #1d4ed8;
   --acc-gr: #166b34;
@@ -418,10 +418,12 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
 .card.is-over .ttl::before { background: var(--bad); }
 .budget-row.total { padding-bottom: 10px; margin-bottom: 1px; border-bottom: 1px solid var(--line); }
 .budget-row.total .budget-name { font-weight: 500; }
-.budget-bar { position: relative; height: 7px; }
-/* marcador do "hoje": onde o gasto deveria estar se o mês fosse linear */
-.budget-today { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--txt); opacity: 0.6; }
-.budget-meta { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.budget-bar { position: relative; height: 7px; overflow: visible; }
+/* marcador do "hoje": onde o gasto deveria estar se o mês fosse linear — halo da cor do painel p/ contrastar sobre a barra cheia */
+.budget-today { position: absolute; top: -2px; bottom: -2px; width: 2px; margin-left: -1px; background: var(--txt); box-shadow: 0 0 0 1px var(--panel); }
+.budget-name .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.budget-meta { display: flex; flex-wrap: wrap; gap: 2px 6px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.budget-meta > span + span::before { content: '· '; color: var(--muted); }
 .budget-meta .ok { color: var(--ok); }
 .budget-meta .warn { color: var(--warn); }
 .budget-meta .over { color: var(--bad); }
@@ -443,12 +445,13 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
 .bud-main .budget-name { flex: 1; font-size: 14px; }
 .bud-main .rev-val { flex: none; width: 116px; text-align: right; font-family: var(--mono); }
 .bud-use {
-  flex: none; background: none; border: 1px dashed var(--line-strong); border-radius: var(--r);
+  flex: none; background: none; border: 1px dashed color-mix(in srgb, var(--acc) 70%, var(--line-strong)); border-radius: var(--r);
   color: var(--acc); font-family: var(--mono); font-size: 11px; padding: 3px 7px; cursor: pointer;
 }
 .bud-use:hover { border-color: var(--acc); }
-.bud-hint { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.bud-hint { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 3px 10px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
 .bud-mini { flex: none; width: 64px; height: 4px; background: var(--line); border-radius: var(--r); overflow: hidden; }
+:root[data-theme="light"] .bud-mini { background: #ebebea; } /* trilho mais claro: a cor de aviso passava raspando em 4px */
 .bud-mini i { display: block; height: 100%; }
 .bud-mini i.ok { background: var(--ok); }
 .bud-mini i.warn { background: var(--warn); }

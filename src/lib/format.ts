@@ -3,21 +3,28 @@
 /** formata número como moeda BRL: 1234.5 -> "R$ 1.234,50" */
 export const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
-/** "1.234,56" / "1234,56" / "1234.56" / "1.234" -> número; com vírgula, os pontos são milhar */
+/**
+ * "1.234,56" / "1234,56" / "1234.56" / "1.234" / "1.5" -> número.
+ * com vírgula, os pontos são milhar; sem vírgula, "1.234" (grupos de 3) é milhar e "1.5" é decimal.
+ */
 function toNumber(raw: string): number {
   const s = raw.trim()
-  const normalized = s.includes(',') ? s.replace(/\./g, '').replace(',', '.') : s
+  const normalized = s.includes(',')
+    ? s.replace(/\./g, '').replace(',', '.')
+    : /^-?\d{1,3}(\.\d{3})+$/.test(s)
+      ? s.replace(/\./g, '')
+      : s
   return Number(normalized)
 }
 
-/** converte um valor digitado ("50", "50,5", "50.5", "1.234,56") em número (0 se inválido) */
-export const parseAmount = (raw: string) => toNumber(raw) || 0
+/** converte um valor digitado ("50", "50,5", "50.5", "1.234,56") em número (0 se inválido ou negativo) */
+export const parseAmount = (raw: string) => Math.max(0, toNumber(raw)) || 0
 
-/** normaliza o valor digitado para "X,XX" (ex.: "50" -> "50,00"); vazio continua vazio */
+/** normaliza o valor digitado para "X,XX" (ex.: "50" -> "50,00"); vazio continua vazio; estranho/negativo fica como está */
 export function maskMoney(raw: string): string {
   if (!raw.trim()) return ''
   const n = toNumber(raw)
-  if (!Number.isFinite(n)) return raw // valor estranho: deixa como está p/ o usuário corrigir
+  if (!Number.isFinite(n) || n < 0) return raw // deixa como está p/ o usuário corrigir
   return n.toFixed(2).replace('.', ',')
 }
 
